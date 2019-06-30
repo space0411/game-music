@@ -9,10 +9,10 @@ module.exports = {
 
   attributes: {
     idProduct: {
-      model: 'product',
+      type: 'number'
     },
     idFlatform: {
-      model: 'flatform'
+      type: 'number'
     }
   },
   tableName: 'flatform_link'

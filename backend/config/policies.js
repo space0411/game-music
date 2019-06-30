@@ -23,7 +23,8 @@ module.exports.policies = {
     'activate': 'isAuthorized',
     'delete': 'isAdmin',
     'read': 'isAdmin',
-    'newotp': 'isAuthorized'
+    'newotp': 'isAuthorized',
+    'password': 'isAuthorized'
   },
   ProductController: {
     'create': 'isAdmin',

@@ -1,4 +1,4 @@
 module.exports.const = {
-  jwtSecret: '!RealEstateNo1?@@OhMyGod',
-  tokenLife: 30 * 24 * 60 * 60 * 1000, // 30 days
+  jwtSecret: 'O&l1%j@tR98v4YTj0*E0VZ',
+  tokenLife: 30 * 24 * 60 * 60, // 30 days
 };

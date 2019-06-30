@@ -20,9 +20,7 @@ module.exports = {
     },
     beforeCreate: function (values, next) {
         values.otp = Math.floor(100000 + Math.random() * 900000);
-        console.log(values.otp);
         values.expireTime = moment().add(5, 'm').unix();
-        console.log(values.expireTime);
         return next();
     },
 };

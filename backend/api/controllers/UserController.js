@@ -20,7 +20,7 @@ module.exports = {
         //     data.role = 'user'
         // else
         //     data['role'] = 'user'
-
+        console.log(data)
         try {
             let foundUser = await User.findOne({
                 email: data.email
@@ -79,6 +79,13 @@ module.exports = {
             const otpData = {
                 owner: createdUser.id
             };
+            if (createdUser.activated) {
+                return res.status(201).json(Res.success(undefined, {
+                    message: sails.__('userWasActivated')
+                }));
+            }
+            // delete old OTP with id user
+            await OTP.destroy({ owner: createdUser.id });
             let createdOTP = await OTP.create(otpData).fetch();
             if (createdOTP) {
                 // Send a email to User
@@ -89,7 +96,7 @@ module.exports = {
                 };
                 Mailer.sendWelcomeMail(emailData);
             }
-            return res.status(201).json(Res.success(createdUser, {
+            return res.status(201).json(Res.success(undefined, {
                 message: sails.__('registerSuccess')
             }));
         } catch (error) {
@@ -174,14 +181,9 @@ module.exports = {
             }
             var randomPasword = Math.random().toString(36).slice(-8);
             var templateToken = {
-                'createdAt': foundUser.createdAt,
-                'updatedAt': foundUser.updatedAt,
-                'email': foundUser.email,
-                'id': foundUser.id,
-                'phone': foundUser.phone,
-                'name': foundUser.name,
-                'role': foundUser.role,
-                'password': randomPasword
+                createdAt: foundUser.createdAt,
+                email: foundUser.email,
+                password: randomPasword
             };
             var token = jwToken.generate({
                 user: templateToken
@@ -191,7 +193,7 @@ module.exports = {
                 email: foundUser.email,
                 name: foundUser.name,
                 newPassword: randomPasword,
-                url: `localhost:1337/api/v1/user/password?token=${token}`
+                url: `http://localhost:1338/api/v1/user/config-forgot-password?token=${token}`
             };
             Mailer.sendForgotPassword(emailData);
         } catch (error) {
@@ -211,9 +213,9 @@ module.exports = {
     /**
      * Config Password change
      *
-     * (GET /api/v1/user/password)
+     * (GET /api/v1/user/config-forgot-password)
      */
-    password: async (req, res) => {
+    configForgotPassword: async (req, res) => {
         const token = req.param('token');
         if (!token) {
             return res.status(403).json(Res.success(undefined, { message: sails.__('requiredToken') }));
@@ -230,14 +232,12 @@ module.exports = {
             try {
                 let foundUser = await User.findOne({
                     email: data.email,
-                    id: data.id,
                     createdAt: data.createdAt
                 });
-                if (!foundUser) {
+                if (!foundUser)
                     return res.status(400).json(Res.error(undefined, {
                         message: sails.__('userNotFound')
                     }));
-                }
                 await User.update({ id: foundUser.id }).set({ password: data.password }).fetch();
             } catch (error) {
                 switch (error.name) {
@@ -252,6 +252,35 @@ module.exports = {
             return res.status(200).json(Res.success(undefined, { message: sails.__('newPasswordChanged') }));
         });
     },
+
+    /**
+     * Config Password change
+     *
+     * (POST /api/v1/user/password)
+     */
+    password: async (req, res) => {
+        var body = req.body;
+        var newPassword = body.password;
+        if (!newPassword) {
+            return res.status(403).json(Res.success(undefined, { message: sails.__('requiredPassword') }));
+        }
+        const data = req.user;
+        if (!data)
+            return res.status(400).json(Res.error(undefined, { message: sails.__('userNotFound') }));
+        try {
+            await User.update({ id: data.id }).set({ password: newPassword }).fetch();
+        } catch (error) {
+            switch (error.name) {
+                case 'UsageError':
+                    return res.status(400).json(Res.error(undefined, { message: sails.__('invalidInput') }));
+                case 'AdapterError':
+                    return res.status(400).json(Res.error(undefined, { message: sails.__('adapterError') }));
+                default:
+                    return res.serverError(error);
+            }
+        }
+        return res.status(200).json(Res.success(undefined, { message: sails.__('newPasswordChanged') }));
+    },
     /**
      * Login
      *
@@ -262,7 +291,7 @@ module.exports = {
         passport.authenticate('local', (err, user, info) => {
             console.log(err, user, info);
             if (err) {
-                return res.status(403).json(Res.error(err, {
+                return res.status(403).json(Res.error(undefined, {
                     message: 'Something error.'
                 }));
             }
@@ -289,7 +318,7 @@ module.exports = {
 
             jwToken.verify(token, async (err, decode) => {
                 if (err) {
-                    return res.status(401).json(Res.error(err, {
+                    return res.status(401).json(Res.error(undefined, {
                         message: sails.__('invalidToken')
                     }));
                 }
@@ -303,7 +332,7 @@ module.exports = {
                     expireTime: decode.exp,
                     owner: user.id
                 };
-
+                await JwtToken.update({ owner: user.id, isActive: true }).set({ isActive: false }).fetch();
                 let createdToken = await JwtToken.create(adata).fetch();
                 console.log('createdToken', createdToken);
                 let data = {
@@ -344,9 +373,9 @@ module.exports = {
             }
 
             try {
-                var updateJwtToken = await JwtToken.update({
+                await JwtToken.update({
                     id: foundJwtToken.id
-                }, { isActive: false }).fetch();
+                }, { isActive: true }).set({ isActive: false }).fetch();
             } catch (error) {
                 return res.status(400).json(Res.error(undefined, {
                     message: loggoutFailed

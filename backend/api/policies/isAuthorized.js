@@ -57,7 +57,7 @@ module.exports = async function (req, res, next) {
           //console.log('token decode', decode);
           req.user = foundJwtToken.owner;
           req.user.token = foundJwtToken.token;
-          console.log('token req user', req.user);
+          // console.log('token req user', req.user);
           return next();
         }
       });

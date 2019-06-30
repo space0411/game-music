@@ -131,3 +131,5 @@ lib-cov
 *.pid
 
 backend/package-lock.json
+backend/assets/music
+backend/assets/images

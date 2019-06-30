@@ -50,15 +50,26 @@ module.exports = {
     create: async (req, res) => {
         var productId = req.param('productId')
         var listData = JSON.parse(req.param('listData'))
+        console.log(listData)
         if (!listData && listData.length > 0)
             return res.status(400).json(Res.error(undefined, { message: sails.__('invalidInput') }))
 
         let createMusic = []
+        // don't allow the total upload size to exceed 15MB
+        let maxSize = 15 * 1024 * 1024
         try {
             for (var i = 0; i < listData.length; i++) {
-                req.file(`file${index}`).upload({
-                    // don't allow the total upload size to exceed ~10MB
-                    maxBytes: 10000000,
+                let fileName = `${listData[i].name.replace(/[^a-zA-Z0-9]/g, '')}`
+                let musicData = listData[i]
+                musicData['idProduct'] = productId
+                musicData['url'] = `${productId}/${fileName}`
+                musicData['type'] = 'mp3' // abc[.]mp3
+                let create = await Music.create(musicData).fetch()
+                createMusic.push(create)
+
+                req.file(`file${i}`).upload({
+                    saveAs: fileName,
+                    maxBytes: maxSize,
                     dirname: require('path').resolve(sails.config.appPath, `assets/music/${productId}`)
                 }, async (err, uploadedFiles) => {
                     if (err) { return res.serverError(err) }
@@ -69,12 +80,13 @@ module.exports = {
                     let filename = uploadedFiles[0].fd.substring(uploadedFiles[0].fd.lastIndexOf('/') + 1)
                     console.log(filename);
                     // prepare data for import
-                    let url = filename.split('music\\')[1]
-                    let musicData = listData[i]
-                    musicData['url'] = url
-                    musicData['type'] = url.split('.')[1] // abc[.]mp3
-                    let create = await Music.create(musicData).fetch();
-                    createMusic.push(create);
+                    // let url = filename.split('music\\')[1]
+                    // let musicData = listData[i]
+                    // musicData['idProduct'] = productId
+                    // musicData['url'] = url
+                    // musicData['type'] = url.split('.')[1] // abc[.]mp3
+                    // let create = await Music.create(musicData).fetch();
+                    // createMusic.push(create);
                 })
             }
         } catch (error) {
@@ -111,8 +123,8 @@ module.exports = {
             const revURL = musicData.url
 
             req.file(`file`).upload({
-                // don't allow the total upload size to exceed ~10MB
-                maxBytes: 10000000,
+                // don't allow the total upload size to exceed ~15MB
+                maxBytes: 15 * 1024 * 1024,
                 dirname: require('path').resolve(sails.config.appPath, `assets/music/${musicData.idProduct}`)
             }, async (err, uploadedFiles) => {
                 if (err) { return res.serverError(err) }

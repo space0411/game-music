@@ -9,7 +9,8 @@
  */
 
 module.exports = {
-
+  port: 1338,
+  
   // Any configuration settings may be overridden below, whether it's built-in Sails
   // options or custom configuration specifically for your app (e.g. Stripe, Mailgun, etc.)
 

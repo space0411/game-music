@@ -10,7 +10,7 @@ module.exports = {
             },
             {
                 to: obj.email,
-                subject: 'Email verification required'
+                subject: '[Mgame] Email verification required'
             }, (err) => { console.log(err || 'Wellcome Mail Sent!'); }
         );
     },
@@ -26,7 +26,7 @@ module.exports = {
             },
             {
                 to: obj.email,
-                subject: 'Change your KBS password'
+                subject: '[Mgame] Please reset your password'
             }, (err) => { console.log(err || 'Forgot password Mail Sent!'); }
         );
     }

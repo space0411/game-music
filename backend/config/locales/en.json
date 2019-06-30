@@ -36,5 +36,7 @@
 	"updateImageSuccess": "updateImageSuccess",
 	"readProductSuccess": "readProductSuccess",
 	"updateProductSuccess": "updateProductSuccess",
-	"deleteProductSuccess": "deleteProductSuccess"
+	"deleteProductSuccess": "deleteProductSuccess",
+	"userWasActivated": "userWasActivated",
+	"createMusicSuccess": "createMusicSuccess"
 }

@@ -10,14 +10,14 @@ var tokenSecret = sails.config.const.jwtSecret;
 
 // Generates a token from supplied payload
 module.exports.generate = function (payload, expireTime) {
-  const expiresIn = expireTime || 12 * 60 * 60;
+  const expiresIn = expireTime || 30 * 24 * 60 * 60; // 30 x hours x munite x 60(s) => 30 day
   // console.log(expiresIn)
   return jwt.sign(
     payload,
     tokenSecret, // Token Secret that we sign it with
     {
       expiresIn: expiresIn
-    } // hours x munite x 60(s) => 12 hours
+    } 
   );
 };
 

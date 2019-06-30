@@ -10,6 +10,7 @@ module.exports = {
   attributes: {
 
     name: { type: 'string' },
+    developer: { type: 'string' },
     releaseDate: { type: 'number' },
     numberOfFile: { type: 'number', defaultsTo: 0 },
     createdBy: { model: 'user' },
