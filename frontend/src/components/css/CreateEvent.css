@@ -1,0 +1,26 @@
+#container {
+    padding: 16px;
+}
+
+.text-area-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.text-area {
+    border: 1 solid gray;
+    border-radius: 4px;
+}
+
+.short {
+    height: 100px;
+}
+
+.full {
+    height: 300px;
+}
+
+.previewCard {
+    max-width: 320px;
+    max-height: 480px;
+}

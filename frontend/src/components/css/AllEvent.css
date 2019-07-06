@@ -1,0 +1,33 @@
+#header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    border: 1px solid gray;
+    border-radius: 2px;
+    text-align: center;
+}
+
+.id {
+    flex-grow: 0.5;
+    border-right: 1px solid gray;
+}
+.idtype {
+    flex-grow: 0.5;
+    border-right: 1px solid gray;
+}
+.client {
+    flex-grow: 0.5;
+    border-right: 1px solid gray;
+}
+.name {
+    flex-grow: 3;
+    border-right: 1px solid gray;
+}
+.date {
+    flex-grow: 1;
+    border-right: 1px solid gray;
+}
+.action {
+    flex-grow: 2;
+    border-right: 1px solid gray;
+}

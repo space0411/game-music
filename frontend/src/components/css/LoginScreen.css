@@ -1,0 +1,15 @@
+.Login-main {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-flow: column;
+}
+
+.Login-main-form {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid gray;
+    border-radius: 5%;
+    padding: 30px;
+}
