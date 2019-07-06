@@ -8,8 +8,9 @@
 module.exports = {
 
   attributes: {
-    idProduct: {
-      type: 'number'
+    idGame: {
+      type: 'number',
+      model: 'game',
     },
     idFlatform: {
       type: 'number'

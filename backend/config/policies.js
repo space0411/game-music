@@ -48,4 +48,16 @@ module.exports.policies = {
     'delete': 'isAdmin',
     'updateMusicUrl': 'isAdmin'
   },
+  GameController: {
+    'create': 'isAdmin',
+    'update': 'isAdmin',
+    'delete': 'isAdmin',
+    'image': 'isAdmin'
+  },
+  DeveloperController: {
+    'create': 'isAdmin',
+    'update': 'isAdmin',
+    'delete': 'isAdmin',
+    'image': 'isAdmin'
+  },
 };

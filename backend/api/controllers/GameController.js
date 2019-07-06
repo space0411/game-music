@@ -1,19 +1,19 @@
 /**
- * ProductController
+ * GameController
  *
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
+
 module.exports = {
 
     /**
-    * read Product by Categories OR All product
+    * read game
     *
-    * (POST /api/v1/product/read)
+    * (POST /api/v1/game/read)
     */
     read: async (req, res) => {
         const body = req.body;
-        const categoryId = body.type;
 
         let page = body.page || 1;
         let rowsOnPage = body.rowsOnPage || 20;
@@ -24,27 +24,23 @@ module.exports = {
 
         let foundTable = [];
 
-        const where = {
-            deletedAt: 0,
-            type: categoryId
-        };
-
-        if (!categoryId) {
-            delete where.type;
-        }
-
         try {
-            const temp = await Product.find({
-                where
+            const temp = await Game.find({
+                where: { deletedAt: 0 }
             });
             totalRows = temp.length;
             console.log('totalRows', totalRows);
-            foundTable = await Product.find({
-                where,
+            foundTable = await Game.find({
+                where: { deletedAt: 0 },
                 skip: skip,
                 limit: limit,
-                sort: 'id ASC'
+                sort: 'id DESC'
             });
+            // await Promise.all(foundTable.map(async (element) => {
+            //     element['childlist'] = await ChildGame.find({
+            //         where: { deletedAt: 0, type: element.id }
+            //     });
+            // }));
         } catch (error) {
             switch (error.name) {
                 case 'UsageError':
@@ -59,50 +55,21 @@ module.exports = {
         var outData = {
             page: parseInt(page),
             totalRows: totalRows,
-            list: foundTable,
-            type: categoryId,
+            list: foundTable
         };
-        if (!categoryId) {
-            delete outData.type;
-        }
-        return res.status(200).json(Res.success(outData, { message: sails.__('readProductSuccess') }));
-    },
-
-    mostpopular: async (req, res) => {
-
+        return res.status(200).json(Res.success(outData, { message: sails.__('readGameSuccess') }));
     },
 
     /**
-     * Create Product
+     * Create Game
      *
-     * (POST /api/v1/product/create)
+     * (POST /api/v1/game/create)
      */
     create: async (req, res) => {
         const body = req.body;
-        console.log('Create product', body);
-        body['createdBy'] = req.user.id;
-        let product;
-        let flatform = [];
-        let genre = [];
+        let created;
         try {
-            product = await Product.create(body).fetch();
-            const ff = body.flatform;
-            if (ff) {
-                let ffList = ff.split(',');
-                for (let value of ffList) {
-                    let f = await PlatformLink.create({ idProduct: product.id, idFlatform: parseInt(value.trim()) });
-                    flatform.push(f);
-                }
-            }
-            const g = body.genre;
-            if (g) {
-                let gList = g.split(',');
-                for (let value of gList) {
-                    let n = await GenreLink.create({ idProduct: product.id, idGenre: parseInt(value.trim()) });
-                    genre.push(n);
-                }
-            }
-
+            created = await Game.create(body).fetch();
         } catch (error) {
             switch (error.name) {
                 case 'UsageError':
@@ -113,18 +80,15 @@ module.exports = {
                     return res.serverError(error);
             }
         }
-        var outData = {
-            product: product,
-            flatform: flatform,
-            genre: genre
-        }
-        return res.status(200).json(Res.success(outData, { message: sails.__('createProductSuccess') }));
+        return res.status(200).json(Res.success(created, { message: sails.__('createGameSuccess') }));
+
+
     },
 
     /**
-    * Upload Product Image
+    * Upload Game Image
     *
-    * (POST /api/v1/product/image)
+    * (POST /api/v1/game/image)
     */
     image: async (req, res) => {
         var idProduct = req.param('id');
@@ -138,7 +102,7 @@ module.exports = {
                 req.file(`image${index}`).upload({
                     // don't allow the total upload size to exceed ~5MB
                     maxBytes: 5000000,
-                    dirname: require('path').resolve(sails.config.appPath, 'assets/images/product')
+                    dirname: require('path').resolve(sails.config.appPath, 'assets/images/game')
                 }, async (err, uploadedFiles) => {
                     if (err) { return res.serverError(err); }
                     // If no files were uploaded, respond with an error.
@@ -150,10 +114,10 @@ module.exports = {
                     //let uploadLocation = process.cwd() + '/assets/images/product/' + filename;
                     //console.log(uploadLocation);
                     const imageData = {
-                        url: filename.split('product\\')[1],
+                        url: filename.split('game\\')[1],
                         idProduct: idProduct
                     };
-                    var create = await ProductImage.create(imageData).fetch();
+                    var create = await GameImage.create(imageData).fetch();
                     created.push(create);
                 });
             }
@@ -169,10 +133,11 @@ module.exports = {
             }
         }
     },
+
     /**
-     * Update Product
+     * Update Game
      *
-     * (POST /api/v1/product/update)
+     * (POST /api/v1/game/update)
      */
     update: async (req, res) => {
         const body = req.body;
@@ -184,7 +149,7 @@ module.exports = {
         let updated = [];
 
         try {
-            updated = await Product.update({ id: id }).set(body).fetch();
+            updated = await Game.update({ id: id }).set(body).fetch();
         } catch (error) {
             switch (error.name) {
                 case 'UsageError':
@@ -196,15 +161,15 @@ module.exports = {
             }
         }
 
-        return res.status(200).json(Res.success(updated[0], { message: sails.__('updateProductSuccess') }));
+        return res.status(200).json(Res.success(updated[0], { message: sails.__('updateGameSuccess') }));
 
 
     },
 
     /**
-     * Remove Product
+     * Remove Game
      *
-     * (DELETE /api/v1/product/delete)
+     * (DELETE /api/v1/game/delete)
      */
     delete: async (req, res) => {
         const body = req.body;
@@ -215,7 +180,7 @@ module.exports = {
 
         let deleted = [];
         try {
-            deleted = await Product.update({ id: id }).set({ deletedAt: Date.now() }).fetch();
+            deleted = await Game.update({ id: id }).set({ deletedAt: Date.now() }).fetch();
         } catch (error) {
             switch (error.name) {
                 case 'UsageError':
@@ -227,8 +192,8 @@ module.exports = {
             }
         }
 
-        console.log('deletedProduct', deleted.id);
-        return res.status(200).json(Res.success(undefined, { message: sails.__('deleteProductSuccess') }));
+        console.log('deletedGame', deleted.id);
+        return res.status(200).json(Res.success(undefined, { message: sails.__('deleteGameSuccess') }));
 
     }
 };

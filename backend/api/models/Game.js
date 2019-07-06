@@ -1,5 +1,5 @@
 /**
- * GenreLink.js
+ * Game.js
  *
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
@@ -8,13 +8,16 @@
 module.exports = {
 
   attributes: {
-    idGame: {
-      model: 'game',
+    idDeveloper: {
+      type: 'number'
     },
-    idGenre: {
-      model: 'genre'
+    name: {
+      type: 'string'
+    },
+    releaseDate: {
+      type: 'number'
     }
   },
-  tableName: 'genre_link'
+
 };
 

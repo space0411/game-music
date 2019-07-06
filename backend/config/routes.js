@@ -67,4 +67,16 @@ module.exports.routes = {
   'POST /api/v1/music/updatemusicurl': 'MusicController.updateMusicUrl',
   'POST /api/v1/music/update': 'MusicController.update',
   'DELETE /api/v1/music/delete': 'MusicController.delete',
+  /* Game API endpoints */
+  'POST /api/v1/game/read': 'GameController.read',
+  'POST /api/v1/game/create': 'GameController.create',
+  'POST /api/v1/game/image': 'GameController.image',
+  'POST /api/v1/game/update': 'GameController.update',
+  'DELETE /api/v1/game/delete': 'GameController.delete',
+  /* Developer API endpoints */
+  'POST /api/v1/developer/read': 'DeveloperController.read',
+  'POST /api/v1/developer/create': 'DeveloperController.create',
+  'POST /api/v1/developer/image': 'DeveloperController.image',
+  'POST /api/v1/developer/update': 'DeveloperController.update',
+  'DELETE /api/v1/developer/delete': 'DeveloperController.delete',
 };
