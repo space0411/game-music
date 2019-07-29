@@ -8,8 +8,8 @@ import { Redirect } from 'react-router-dom';
 @inject('SessionStore')
 @observer
 class LoginScreen extends Component {
-    @observable userName = 'ddnhat@tma.com.vn'
-    @observable password = 'xoguni2l'
+    @observable userName = ''
+    @observable password = ''
     @observable message
 
     constructor(props) {

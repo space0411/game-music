@@ -13,6 +13,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import { Delete, Edit } from '@material-ui/icons';
 import { Redirect } from "react-router-dom";
+import Moment from 'react-moment';
 
 import EnhancedTableHead from './products/EnhancedTableHead';
 import EnhancedTableToolbar from './products/EnhancedTableToolbar';
@@ -45,7 +46,7 @@ function getSorting(order, orderBy) {
 const styles = theme => ({
     root: {
         width: '100%',
-        marginTop: theme.spacing.unit * 3,
+        marginTop: theme.spacing(3),
     },
     table: {
         minWidth: 1020,
@@ -54,7 +55,7 @@ const styles = theme => ({
         overflowX: 'auto',
     },
     button: {
-        margin: theme.spacing.unit,
+        margin: theme.spacing(1),
     },
     input: {
         display: 'none',
@@ -83,7 +84,7 @@ class ProductsScreen extends React.Component {
         orderBy: 'calories',
         selected: [],
         page: 0,
-        rowsPerPage: 5,
+        rowsPerPage: 10,
     };
 
     handleRequestSort = (event, property) => {
@@ -141,6 +142,10 @@ class ProductsScreen extends React.Component {
     }
 
     handleDeleteClick = (item) => {
+        this.alert = {
+            title: 'Alert',
+            content: `Do you want delete product "${item.name}" with id=${item.id} ?`
+        }
         this.productId = item.id
         this.openAlert = true
     }
@@ -195,14 +200,13 @@ class ProductsScreen extends React.Component {
                                             <TableCell padding="checkbox">
                                                 <Checkbox checked={isSelected} />
                                             </TableCell>
+                                            <TableCell component="th" scope="row" padding="none">{n.id}</TableCell>
                                             <TableCell component="th" scope="row" padding="none">
                                                 {n.name}
                                             </TableCell>
-                                            <TableCell align="right">{n.quantity}</TableCell>
-                                            <TableCell align="right">{n.price}</TableCell>
-                                            <TableCell align="right">{n.unit}</TableCell>
-                                            <TableCell align="right">{n.maintype}</TableCell>
-                                            <TableCell align="right">{n.type}</TableCell>
+                                            <TableCell align="left">{n.developer}</TableCell>
+                                            <TableCell align="center">{n.numberOfFile}</TableCell>
+                                            <TableCell align="right"><Moment format="D MMM YYYY" unix>{n.releaseDate}</Moment></TableCell>
                                             <TableCell align="right">{n.createdBy}</TableCell>
                                             <TableCell align="right">{n.view}</TableCell>
                                             <TableCell align="right">
@@ -227,7 +231,7 @@ class ProductsScreen extends React.Component {
                     </Table>
                 </div>
                 <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
+                    rowsPerPageOptions={[10, 20, 40]}
                     component="div"
                     count={data.length}
                     rowsPerPage={rowsPerPage}

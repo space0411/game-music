@@ -10,7 +10,7 @@ import {
   ListItemText, Toolbar, Typography, ExpansionPanel, ExpansionPanelDetails,
   ExpansionPanelSummary
 } from '@material-ui/core';
-import { Mail, Dashboard, AccountCircle, RestaurantMenu, Gavel, Menu, ExpandMore } from '@material-ui/icons';
+import { Mail, Dashboard, AccountCircle, RestaurantMenu, Menu, ExpandMore, FiberNew } from '@material-ui/icons';
 
 import LoginScreen from './components/LoginScreen';
 import DashboardScreen from './components/DashboardScreen';
@@ -22,7 +22,7 @@ import CreateUserScreen from './components/CreateUserScreen';
 import ProductsScreen from './components/ProductsScreen';
 import CreateProductsScreen from './components/CreateProductScreen';
 
-const drawerWidth = 240;
+const drawerWidth = 300;
 
 @inject('SessionStore', 'ScreenStore')
 @observer
@@ -34,8 +34,26 @@ class App extends Component {
     navList: [
       { 'title': 'Dashboard', 'content': [] },
       { 'title': 'User', 'content': [{ 'name': 'Users', 'url': 'user' }, { 'name': 'Create new user', 'url': 'new-user' }] },
-      { 'title': 'Product', 'content': [{ 'name': 'Products', 'url': 'product' }, { 'name': 'Create new product', 'url': 'new-product' }] },
-      { 'title': 'Trade', 'content': [] },
+      {
+        'title': 'Product', 'content': [
+          { 'name': 'Products', 'url': 'product' },
+          { 'name': 'Music', 'url': 'music' },
+          { 'name': 'Flatform', 'url': 'flatform' },
+          { 'name': 'Genre', 'url': 'genre' },
+          { 'name': 'Game', 'url': 'game' },
+          { 'name': 'Developer', 'url': 'developer' },
+        ]
+      },
+      {
+        'title': 'Generate new...', 'content': [
+          { 'name': 'Product', 'url': 'new-product' },
+          { 'name': 'Music', 'url': 'new-music' },
+          { 'name': 'Flatform', 'url': 'new-flatform' },
+          { 'name': 'Genre', 'url': 'new-genre' },
+          { 'name': 'Game', 'url': 'new-game' },
+          { 'name': 'Developer', 'url': 'new-developer' },
+        ]
+      },
       { 'title': 'Feedback', 'content': [] }
     ]
   };
@@ -59,23 +77,27 @@ class App extends Component {
     const { classes, theme } = this.props;
     const { expanded } = this.state;
     const drawer = (
-      <div>
+      <div style={{ overflowX: 'hidden' }}>
         <div className={classes.toolbar}>
           <h4 className="text-center mt-3">Administration</h4>
         </div>
         <Divider />
-        <List>
+        <List style={{ paddingLeft: 8, paddingRight: 8 }}>
           {this.state.navList.map((item, index) => (
             <ExpansionPanel key={index} expanded={expanded === 'panel' + index} onChange={this.handleChange('panel' + index)}>
-              <ExpansionPanelSummary expandIcon={ item.content.length > 0 ? <ExpandMore />: null}>
+              <ExpansionPanelSummary expandIcon={item.content.length > 0 ? <ExpandMore /> : null}>
                 {/* <Link to={item.title} className='d-flex ml-1 row w-100'> */}
-                  <Typography component={'span'} className={classes.heading}><ListItemIcon>{
-                    index === 0 ? <Dashboard /> :
-                      index === 1 ? <AccountCircle /> :
-                        index === 2 ? <RestaurantMenu /> :
-                          index === 3 ? <Gavel /> : <Mail />}
-                  </ListItemIcon></Typography>
-                  <Typography component={'span'} className={classes.secondaryHeading}>{item.title}</Typography>
+                {/* <Typography component={'span'} className={classes.heading}> */}
+                  <ListItemIcon>
+                    {
+                      index === 0 ? <Dashboard className={classes.icon} /> :
+                        index === 1 ? <AccountCircle className={classes.icon} /> :
+                          index === 2 ? <RestaurantMenu className={classes.icon} /> :
+                            index === 3 ? <FiberNew className={classes.icon} /> : <Mail  className={classes.icon} />
+                    }
+                  </ListItemIcon>
+                {/* </Typography> */}
+                <Typography component={'span'} className={classes.secondaryHeading}>{item.title}</Typography>
                 {/* </Link> */}
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className='d-flex row'>
@@ -113,7 +135,7 @@ class App extends Component {
                   </Typography>
                 </Toolbar>
               </AppBar>
-              <nav className={classes.drawer}>
+              <nav className={classes.drawer} >
                 {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
                 <Hidden smUp implementation="css">
                   <Drawer
@@ -203,7 +225,7 @@ const styles = theme => ({
   },
   content: {
     flexGrow: 1,
-    padding: theme.spacing.unit * 3,
+    padding: theme.spacing(3),
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -213,6 +235,10 @@ const styles = theme => ({
   secondaryHeading: {
     fontSize: theme.typography.pxToRem(15),
     color: theme.palette.text.primary,
+  },
+  icon: {
+    // margin: 0,
+    // width: 32
   },
 });
 

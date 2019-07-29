@@ -1,0 +1,322 @@
+import React from 'react';
+
+import {
+    Button, Dialog, DialogActions, DialogContent,
+    TextField, DialogTitle, AppBar, Tabs, Tab,
+    Typography, Toolbar, Slide, List, ListItem,
+    ListItemIcon, IconButton, ListItemText, Checkbox
+} from '@material-ui/core';
+import CloseIcon from '@material-ui/icons/Close';
+import GameIcon from '@material-ui/icons/Games';
+import StyleIcon from '@material-ui/icons/Style';
+import StarIcon from '@material-ui/icons/Star';
+
+import SwipeableViews from 'react-swipeable-views';
+
+import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
+
+import { observable } from 'mobx';
+import { observer, inject } from 'mobx-react';
+
+function TabContainer({ children, dir }) {
+    return (
+        <Typography component="div" dir={dir} style={{ padding: 8 * 3 }}>
+            {children}
+        </Typography>
+    );
+}
+
+TabContainer.propTypes = {
+    children: PropTypes.node.isRequired,
+    dir: PropTypes.string.isRequired,
+};
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});
+
+
+@inject('SessionStore')
+@observer
+class CreateCategories extends React.Component {
+    @observable isLoadingFlatform = false
+    @observable isLoadingGenre = false
+    @observable isFlatformChange = false
+    @observable isGenreChange = false
+    @observable errorFlatform
+    @observable errorGenre
+    @observable nameFlatform = ''
+    @observable nameGenre = ''
+    @observable value = 0
+
+    @observable flatforms = []
+    @observable checkedFlatforms = []
+    @observable genres = []
+    @observable checkedGenre = []
+
+    constructor(props) {
+        super(props)
+        this.state = {
+            tabs: [
+                {
+                    name: 'Game'
+                },
+                {
+                    name: 'Flatform'
+                },
+                {
+                    name: 'Genre'
+                }
+            ]
+        }
+    }
+    componentDidMount() {
+        this.getFlatform(true)
+        this.getFlatform(false)
+    }
+
+    getFlatform(isFlatform) {
+        const URL = `${this.props.SessionStore.API_URL}${isFlatform ? 'flatform' : 'genre'}/read`
+        fetch(URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                if (isFlatform)
+                    this.flatforms = jsonResult.data.list
+                else
+                    this.genres = jsonResult.data.list
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    handleChange = (event, value) => {
+        this.value = value
+    };
+
+    handleChangeIndex = index => {
+        this.value = index
+    };
+
+    handleCreateFlatformGenre = () => {
+        if (this.value === 0) {
+            if (this.nameFlatform.length === 0)
+                return
+        } else {
+            if (this.nameGenre.length === 0)
+                return
+        }
+        const url = `${this.props.SessionStore.API_URL}${this.value === 0 ? 'flatform' : 'genre'}/create`
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: JSON.stringify({ name: this.value === 0 ? this.nameFlatform : this.nameGenre })
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                this.value === 0 ? this.isFlatformChange = true : this.isGenreChange = true
+            }
+            this.value === 0 ? this.errorFlatform = jsonResult.message : this.errorGenre = jsonResult.message
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    handleToggleFlatform = value => {
+        const currentIndex = this.checkedFlatforms.indexOf(value);
+        const newChecked = [...this.checkedFlatforms];
+
+        if (currentIndex === -1) {
+            newChecked.push(value);
+        } else {
+            newChecked.splice(currentIndex, 1);
+        }
+        console.log('handleToggleFlatform', newChecked)
+        this.checkedFlatforms = newChecked
+    };
+
+    handleToggleGenre = value => {
+        const currentIndex = this.checkedGenre.indexOf(value);
+        const newChecked = [...this.checkedGenre];
+
+        if (currentIndex === -1) {
+            newChecked.push(value);
+        } else {
+            newChecked.splice(currentIndex, 1);
+        }
+        console.log('handleToggleGenre', newChecked)
+        this.checkedGenre = newChecked
+    };
+
+    render() {
+        const { classes, theme, handleClose, isFlatformChange, isGenreChange, isChangeAll, open } = this.props
+        return (
+            <div className={classes.root}>
+                <Dialog
+                    fullScreen
+                    TransitionComponent={Transition}
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description">
+                    <AppBar className={classes.appBar}>
+                        <Toolbar>
+                            <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="Close">
+                                <CloseIcon />
+                            </IconButton>
+                            <Typography variant="h6" className={classes.title}>
+                                Categories
+                            </Typography>
+                            <Button color="inherit" onClick={this.isFlatformChange && this.isGenreChange ? isChangeAll : this.isFlatformChange ? isFlatformChange : this.isGenreChange ? isGenreChange : handleClose} >
+                                Close & Apply
+                            </Button>
+                        </Toolbar>
+                    </AppBar>
+                    <AppBar position="static" color="default">
+                        <Tabs
+                            value={this.value}
+                            onChange={this.handleChange}
+                            indicatorColor="primary"
+                            textColor="primary"
+                            variant="fullWidth"
+                        >
+                            {
+                                this.state.tabs.map((item, index) => {
+                                    return <Tab icon={index === 0 ? <GameIcon /> : index === 1 ? <StyleIcon /> : <StarIcon />} key={index} label={item.name} />
+                                })
+                            }
+                        </Tabs>
+                    </AppBar>
+                    <SwipeableViews
+                        axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
+                        index={this.value}
+                        onChangeIndex={this.handleChangeIndex}
+                    >
+                        {
+                            this.state.tabs.map((item, index) => {
+                                if (index === 0)
+                                    return (
+                                        <TabContainer key={index} dir={theme.direction}>
+                                            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                {[0, 1].map((value, indexList) => {
+                                                    const dataArray = value === 0 ? this.flatforms : this.genres
+                                                    return (
+                                                        <div key={indexList} style={{ border: '1px solid gray', marginRight: 10 }}>
+                                                            <DialogTitle id="alert-dialog-title">{value === 0 ? 'Flatform' : 'Genre'}</DialogTitle>
+                                                            <List className={classes.list}>
+                                                                {dataArray.map((item, index) => {
+                                                                    const labelId = `checkbox-list-label-${index}`;
+
+                                                                    return (
+                                                                        <ListItem key={index} role={undefined} dense button onClick={() => value === 0 ? this.handleToggleFlatform(index) : this.handleToggleGenre(index)}>
+                                                                            <ListItemIcon>
+                                                                                <Checkbox
+                                                                                    edge="start"
+                                                                                    checked={value === 0 ? this.checkedFlatforms.indexOf(index) !== -1 : this.checkedGenre.indexOf(index) !== -1}
+                                                                                    tabIndex={-1}
+                                                                                    disableRipple
+                                                                                    inputProps={{ 'aria-labelledby': labelId }}
+                                                                                />
+                                                                            </ListItemIcon>
+                                                                            <ListItemText id={labelId} primary={item.name} />
+                                                                        </ListItem>
+                                                                    );
+                                                                })}
+                                                            </List>
+                                                        </div>
+                                                    )
+                                                })}
+                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                    <DialogTitle id="alert-dialog-title">Game</DialogTitle>
+                                                    <TextField
+                                                        required
+                                                        label={`Enter ${index === 0 ? 'flatform' : 'genre'} name`}
+                                                        className={classes.textField}
+                                                        value={index === 0 ? this.nameFlatform : this.nameGenre}
+                                                        onChange={event => index === 0 ? this.nameFlatform = event.target.value : this.nameGenre = event.target.value}
+                                                        margin="normal" />
+                                                    <Button variant="contained" color="secondary">Submit</Button>
+                                                </div>
+                                            </div>
+                                        </TabContainer>
+                                    )
+                                return (
+                                    <TabContainer key={index} dir={theme.direction}>
+                                        <DialogTitle id="alert-dialog-title">Create new {index === 0 ? 'Flatform' : 'Genre'}</DialogTitle>
+                                        <DialogContent>
+                                            <div id="alert-dialog-description">
+                                                <TextField
+                                                    required
+                                                    label={`Enter ${index === 0 ? 'flatform' : 'genre'} name`}
+                                                    className={classes.textField}
+                                                    value={index === 0 ? this.nameFlatform : this.nameGenre}
+                                                    onChange={event => index === 0 ? this.nameFlatform = event.target.value : this.nameGenre = event.target.value}
+                                                    margin="normal" />
+                                            </div>
+                                            {
+                                                index === 0 ? this.isLoadingFlatform && 'Submiting data...' : this.isLoadingGenre && 'Submiting data...'
+                                            }
+                                            {
+                                                index === 0 ? this.errorFlatform : this.errorGenre
+                                            }
+                                            <Button color="secondary" variant="contained" onClick={this.handleCreateFlatformGenre} >Submit</Button>
+                                        </DialogContent>
+                                        <DialogActions>
+
+                                        </DialogActions>
+                                    </TabContainer>
+                                )
+                            })
+                        }
+                    </SwipeableViews>
+                </Dialog>
+            </div>
+        );
+    }
+}
+
+const styles = theme => ({
+    root: {
+        backgroundColor: theme.palette.background.paper,
+        width: 500,
+    },
+    textField: {
+        marginLeft: theme.spacing(1),
+        marginRight: theme.spacing(1),
+        width: '240',
+    },
+    appBar: {
+        position: 'relative',
+    },
+    title: {
+        marginLeft: theme.spacing(2),
+        flex: 1,
+    },
+    list: {
+        width: '100%',
+        maxWidth: 360,
+        backgroundColor: theme.palette.background.paper,
+    },
+});
+
+CreateCategories.propTypes = {
+    classes: PropTypes.object.isRequired,
+    onClose: PropTypes.func,
+    selectedValue: PropTypes.string,
+    theme: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles, { withTheme: true })(CreateCategories);

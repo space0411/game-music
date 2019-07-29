@@ -1,7 +1,7 @@
 import { observable, action } from 'mobx'
 
 class SessionsStore {
-    @observable API_URL = 'http://localhost:1337/api/v1/'
+    @observable API_URL = 'http://localhost:1338/api/v1/'
     @observable isLogin = false
     @observable userInfo = null
     @observable userToken = null

@@ -8,12 +8,11 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Tooltip from '@material-ui/core/Tooltip';
 
 const rows = [
+    { id: 'id', numeric: false, disablePadding: true, label: 'ID' },
     { id: 'name', numeric: false, disablePadding: true, label: 'Name' },
-    { id: 'quantity', numeric: true, disablePadding: false, label: 'Quantity (Number)' },
-    { id: 'price', numeric: true, disablePadding: false, label: 'Price (VNĐ)' },
-    { id: 'unit', numeric: true, disablePadding: false, label: 'Unit' },
-    { id: 'maintype', numeric: true, disablePadding: false, label: 'Category Type' },
-    { id: 'type', numeric: true, disablePadding: false, label: 'Type' },
+    { id: 'developer', numeric: false, disablePadding: false, label: 'Developer' },
+    { id: 'nofile', numeric: true, disablePadding: false, label: 'Number Of File' },
+    { id: 'releaseDate', numeric: true, disablePadding: false, label: 'Release Date' },
     { id: 'createdBy', numeric: true, disablePadding: false, label: 'Created By' },
     { id: 'view', numeric: true, disablePadding: false, label: 'Number Of View' },
     { id: 'options', numeric: true, disablePadding: false, label: '' },

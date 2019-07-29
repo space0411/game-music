@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { observable } from 'mobx';
-import { Button } from 'reactstrap';
 
 
 @inject('ScreenStore', 'SessionStore')

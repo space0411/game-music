@@ -11,6 +11,7 @@ import { observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import AlertDialog from './dialog/AlertDialog';
 import CKEditor from 'ckeditor4-react';
+import CreateCategories from './CreateCategories';
 
 
 @inject('ScreenStore', 'SessionStore')
@@ -29,7 +30,8 @@ class CreateProductsScreen extends React.Component {
         title: 'Ops!',
         content: 'Please fill required information'
     }
-    @observable open = false
+    @observable openAlert = false
+    @observable openAlertFlatformGenre = false
 
     @observable name = ''
     @observable quantity = ''
@@ -49,7 +51,7 @@ class CreateProductsScreen extends React.Component {
     handleNewProductsClick = (e) => {
         e.preventDefault()
         if (!this.name || !this.quantity || !this.price || !this.unit || !this.selectedCate || !this.selectedChildCate) {
-            this.open = true
+            this.openAlert = true
             return
         }
         fetch(`${this.props.SessionStore.API_URL}product/create`, {
@@ -78,7 +80,7 @@ class CreateProductsScreen extends React.Component {
                 title: 'Notify',
                 content: jsonResult.message
             }
-            this.open = true
+            this.openAlert = true
             if (jsonResult.success)
                 this.uploadImage(jsonResult.data.id)
         }).catch((error) => {
@@ -89,7 +91,7 @@ class CreateProductsScreen extends React.Component {
     handleUpdateProductsClick = (e) => {
         e.preventDefault()
         if (!this.productData || !this.name || !this.quantity || !this.price || !this.unit || !this.selectedCate || !this.selectedChildCate) {
-            this.open = true
+            this.openAlert = true
             return
         }
         fetch(`${this.props.SessionStore.API_URL}product/update`, {
@@ -119,7 +121,7 @@ class CreateProductsScreen extends React.Component {
                 title: 'Notify',
                 content: jsonResult.message
             }
-            this.open = true
+            this.openAlert = true
             // if (jsonResult.success)
             //     this.uploadImage(jsonResult.data.id)
         }).catch((error) => {
@@ -149,7 +151,7 @@ class CreateProductsScreen extends React.Component {
                 title: 'Notify',
                 content: jsonResult.message
             }
-            this.open = true
+            this.openAlert = true
         }).catch((error) => {
             console.error(error);
         });
@@ -190,7 +192,7 @@ class CreateProductsScreen extends React.Component {
     };
 
     handleClose = () => {
-        this.open = false
+        this.openAlert = false
     };
 
     onEditorShortChange = (evt) => {
@@ -206,11 +208,43 @@ class CreateProductsScreen extends React.Component {
         this.handleGetCategory()
     }
 
+    handleNewFlatformGenre = (e) => {
+        e.preventDefault()
+        this.openAlertFlatformGenre = true
+    }
+
+    handleCloseCreateFlatformGenre = () => {
+        this.openAlertFlatformGenre = false
+    }
+
+    handleFlatformChange = () => {
+        this.handleCloseCreateFlatformGenre()
+    }
+
+    handleGenreChange = () => {
+        this.handleCloseCreateFlatformGenre()
+    }
+
+    handleChangeAll = () => {
+        this.handleCloseCreateFlatformGenre()
+
+    }
+
     render() {
         const { classes } = this.props;
         return (
             <div>
-                <AlertDialog handleOke={this.handleClose} handleClose={this.handleClose} data={this.alert} open={this.open} />
+                <CreateCategories
+                    open={this.openAlertFlatformGenre}
+                    isFlatformChange={this.handleFlatformChange}
+                    isGenreChange={this.handleGenreChange}
+                    isChangeAll={this.handleChangeAll}
+                    handleClose={this.handleCloseCreateFlatformGenre} />
+                <AlertDialog
+                    open={this.openAlert}
+                    handleOke={this.handleClose}
+                    handleClose={this.handleClose}
+                    data={this.alert} />
                 <h5>Product information</h5>
                 <FormControl className={classes.formControl}>
                     <Select
@@ -242,19 +276,18 @@ class CreateProductsScreen extends React.Component {
                         <MenuItem value="" disabled>
                             Content Categories
                         </MenuItem>
-                        {this.selectedCate ?
+                        {this.selectedCate &&
                             this.selectedCate.childlist.map((item, index) => (
                                 <MenuItem key={index} value={index}>{item.name}</MenuItem>
                             ))
-                            :
-                            null
                         }
                     </Select>
                     <FormHelperText>Select a content category</FormHelperText>
                 </FormControl>
                 <Button variant="contained" className={classes.button} onClick={this.handleRefeshCateClick} color="primary">Refesh Categories</Button>
-                {this.isEditProductMode ? <h6>{this.prevCate}</h6> : null}
+                {this.isEditProductMode && <h6>{this.prevCate}</h6>}
                 <br></br>
+                <Button variant="contained" className={classes.button} onClick={this.handleNewFlatformGenre} color="primary">New Flatform & Genre</Button>
                 <TextField
                     required
                     label="Product Name"
@@ -453,22 +486,22 @@ class CreateProductsScreen extends React.Component {
 
 const styles = theme => ({
     formControl: {
-        margin: theme.spacing.unit,
+        margin: theme.spacing(1),
         minWidth: 120,
     },
     selectEmpty: {
-        marginTop: theme.spacing.unit * 2,
+        marginTop: theme.spacing(2),
     },
     button: {
-        margin: theme.spacing.unit,
+        margin: theme.spacing(1),
     },
     textField: {
-        marginLeft: theme.spacing.unit,
-        marginRight: theme.spacing.unit,
+        marginLeft: theme.spacing(1),
+        marginRight: theme.spacing(1),
         width: 200,
     },
     margin: {
-        margin: theme.spacing.unit,
+        margin: theme.spacing(1),
     },
     input: {
         display: 'none',

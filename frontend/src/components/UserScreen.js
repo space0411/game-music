@@ -47,7 +47,6 @@ class UserScreen extends Component {
     }
 
     render() {
-        const { classes } = this.props;
         let items = []
         for (let number = this.numberstart; number <= this.numberend; number++) {
             items.push(
@@ -195,7 +194,7 @@ class UserScreen extends Component {
 }
 const styles = theme => ({
     button: {
-        margin: theme.spacing.unit,
+        margin: theme.spacing(1),
     },
     input: {
         display: 'none',
