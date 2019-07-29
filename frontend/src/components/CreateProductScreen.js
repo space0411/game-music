@@ -507,8 +507,7 @@ const styles = theme => ({
         display: 'none',
     },
     rootImageList: {
-        width: '100%',
-        maxWidth: '50%',
+        width: 'fit-content',
         backgroundColor: theme.palette.background.paper,
     }
 });

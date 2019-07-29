@@ -4,8 +4,10 @@ import {
     Button, Dialog, DialogActions, DialogContent,
     TextField, DialogTitle, AppBar, Tabs, Tab,
     Typography, Toolbar, Slide, List, ListItem,
-    ListItemIcon, IconButton, ListItemText, Checkbox
+    ListItemIcon, IconButton, ListItemText, Checkbox,
+    ListItemSecondaryAction, Radio
 } from '@material-ui/core';
+import ClearIcon from '@material-ui/icons/Clear';
 import CloseIcon from '@material-ui/icons/Close';
 import GameIcon from '@material-ui/icons/Games';
 import StyleIcon from '@material-ui/icons/Style';
@@ -48,12 +50,19 @@ class CreateCategories extends React.Component {
     @observable errorGenre
     @observable nameFlatform = ''
     @observable nameGenre = ''
+    @observable nameGame = ''
+    @observable nameDeveloper = ''
+    @observable developerURL = ''
     @observable value = 0
 
     @observable flatforms = []
     @observable checkedFlatforms = []
     @observable genres = []
     @observable checkedGenre = []
+    @observable developers = []
+    @observable checkedDeveloper = []
+
+    @observable filesDeveloper = []
 
     constructor(props) {
         super(props)
@@ -63,10 +72,7 @@ class CreateCategories extends React.Component {
                     name: 'Game'
                 },
                 {
-                    name: 'Flatform'
-                },
-                {
-                    name: 'Genre'
+                    name: 'Flatform x Genre x Developer'
                 }
             ]
         }
@@ -74,6 +80,7 @@ class CreateCategories extends React.Component {
     componentDidMount() {
         this.getFlatform(true)
         this.getFlatform(false)
+        this.getDeveloper()
     }
 
     getFlatform(isFlatform) {
@@ -92,6 +99,25 @@ class CreateCategories extends React.Component {
                     this.flatforms = jsonResult.data.list
                 else
                     this.genres = jsonResult.data.list
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    getDeveloper() {
+        const URL = `${this.props.SessionStore.API_URL}developer/read`
+        fetch(URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                this.developers = jsonResult.data.list
             }
         }).catch((error) => {
             console.error(error);
@@ -135,6 +161,60 @@ class CreateCategories extends React.Component {
         });
     }
 
+    handleCreateDeveloper = () => {
+        if (!this.nameDeveloper || !this.developerURL) {
+            alert('Fill a developer name & URl')
+            return
+        }
+        const bodyData = {
+            name: this.nameDeveloper,
+            url: this.developerURL
+        }
+        fetch(`${this.props.SessionStore.API_URL}developer/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: JSON.stringify(bodyData)
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                this.nameDeveloper = ''
+                this.developerURL = ''
+                this.createDeveloperImage(jsonResult.data.id)
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    createDeveloperImage(id) {
+        var data = new FormData()
+        if (this.filesDeveloper.length > 0 && id)
+            data.append(`image`, this.filesDeveloper[0].file, this.filesDeveloper[0].name)
+        else return
+        fetch(`${this.props.SessionStore.API_URL}developer/image?id=${id}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: data
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                alert('Upload image success!')
+                this.filesDeveloper.splice(0, this.filesDeveloper.length)
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
     handleToggleFlatform = value => {
         const currentIndex = this.checkedFlatforms.indexOf(value);
         const newChecked = [...this.checkedFlatforms];
@@ -160,6 +240,31 @@ class CreateCategories extends React.Component {
         console.log('handleToggleGenre', newChecked)
         this.checkedGenre = newChecked
     };
+
+    handleToggleDeveloper = value => {
+        const currentIndex = this.checkedDeveloper.indexOf(value);
+        const newChecked = [];
+        if (currentIndex === -1) {
+            newChecked.push(value);
+        } else {
+            newChecked.splice(currentIndex, 1);
+        }
+        console.log('handleToggleDeveloper', newChecked)
+        this.checkedDeveloper = newChecked
+    }
+
+    handleFileDelete = index => {
+        this.filesDeveloper.splice(index, 1);
+    };
+
+    handleFileChange = e => {
+        const value = e.target.value
+        console.log('handleFileChange', value)
+        if (value) {
+            var file = e.target.files
+            this.filesDeveloper = [...this.filesDeveloper, { 'name': value, 'file': file[0] }]
+        }
+    }
 
     render() {
         const { classes, theme, handleClose, isFlatformChange, isGenreChange, isChangeAll, open } = this.props
@@ -210,81 +315,192 @@ class CreateCategories extends React.Component {
                                 if (index === 0)
                                     return (
                                         <TabContainer key={index} dir={theme.direction}>
+                                            {this.Game(classes)}
+                                        </TabContainer>
+                                    )
+                                else
+                                    return (
+                                        <TabContainer key={index} dir={theme.direction}>
                                             <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                                {[0, 1].map((value, indexList) => {
-                                                    const dataArray = value === 0 ? this.flatforms : this.genres
-                                                    return (
-                                                        <div key={indexList} style={{ border: '1px solid gray', marginRight: 10 }}>
-                                                            <DialogTitle id="alert-dialog-title">{value === 0 ? 'Flatform' : 'Genre'}</DialogTitle>
-                                                            <List className={classes.list}>
-                                                                {dataArray.map((item, index) => {
-                                                                    const labelId = `checkbox-list-label-${index}`;
-
-                                                                    return (
-                                                                        <ListItem key={index} role={undefined} dense button onClick={() => value === 0 ? this.handleToggleFlatform(index) : this.handleToggleGenre(index)}>
-                                                                            <ListItemIcon>
-                                                                                <Checkbox
-                                                                                    edge="start"
-                                                                                    checked={value === 0 ? this.checkedFlatforms.indexOf(index) !== -1 : this.checkedGenre.indexOf(index) !== -1}
-                                                                                    tabIndex={-1}
-                                                                                    disableRipple
-                                                                                    inputProps={{ 'aria-labelledby': labelId }}
-                                                                                />
-                                                                            </ListItemIcon>
-                                                                            <ListItemText id={labelId} primary={item.name} />
-                                                                        </ListItem>
-                                                                    );
-                                                                })}
-                                                            </List>
-                                                        </div>
-                                                    )
-                                                })}
-                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                    <DialogTitle id="alert-dialog-title">Game</DialogTitle>
-                                                    <TextField
-                                                        required
-                                                        label={`Enter ${index === 0 ? 'flatform' : 'genre'} name`}
-                                                        className={classes.textField}
-                                                        value={index === 0 ? this.nameFlatform : this.nameGenre}
-                                                        onChange={event => index === 0 ? this.nameFlatform = event.target.value : this.nameGenre = event.target.value}
-                                                        margin="normal" />
-                                                    <Button variant="contained" color="secondary">Submit</Button>
-                                                </div>
+                                                {this.FlatFormGenre(classes)}
+                                                {this.Developer(classes)}
                                             </div>
                                         </TabContainer>
                                     )
-                                return (
-                                    <TabContainer key={index} dir={theme.direction}>
-                                        <DialogTitle id="alert-dialog-title">Create new {index === 0 ? 'Flatform' : 'Genre'}</DialogTitle>
-                                        <DialogContent>
-                                            <div id="alert-dialog-description">
-                                                <TextField
-                                                    required
-                                                    label={`Enter ${index === 0 ? 'flatform' : 'genre'} name`}
-                                                    className={classes.textField}
-                                                    value={index === 0 ? this.nameFlatform : this.nameGenre}
-                                                    onChange={event => index === 0 ? this.nameFlatform = event.target.value : this.nameGenre = event.target.value}
-                                                    margin="normal" />
-                                            </div>
-                                            {
-                                                index === 0 ? this.isLoadingFlatform && 'Submiting data...' : this.isLoadingGenre && 'Submiting data...'
-                                            }
-                                            {
-                                                index === 0 ? this.errorFlatform : this.errorGenre
-                                            }
-                                            <Button color="secondary" variant="contained" onClick={this.handleCreateFlatformGenre} >Submit</Button>
-                                        </DialogContent>
-                                        <DialogActions>
-
-                                        </DialogActions>
-                                    </TabContainer>
-                                )
                             })
                         }
                     </SwipeableViews>
                 </Dialog>
             </div>
         );
+    }
+
+    Game = (classes) => {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                {[0, 1, 2].map((value, indexList) => {
+                    var dataArray = []
+                    var title = ''
+                    switch (value) {
+                        case 0:
+                            dataArray = this.flatforms
+                            title = 'Flatform'
+                            break
+                        case 1:
+                            dataArray = this.genres
+                            title = 'Genre'
+                            break
+                        case 2:
+                            dataArray = this.developers
+                            title = 'Developer'
+                            break
+                        default: break
+                    }
+                    return (
+                        <div key={indexList} style={{ border: '1px solid gray', marginRight: 10 }}>
+                            <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
+                            <List className={classes.list}>
+                                {dataArray.map((item, index) => {
+                                    const labelId = `checkbox-list-label-${index}`;
+
+                                    return (
+                                        <ListItem key={index} role={undefined} dense button
+                                            onClick={() => value === 0 ?
+                                                this.handleToggleFlatform(index) :
+                                                value === 1 ?
+                                                    this.handleToggleGenre(index) :
+                                                    this.handleToggleDeveloper(index)
+                                            }>
+                                            <ListItemIcon>
+                                                {
+                                                    value < 2 ?
+                                                        <Checkbox
+                                                            edge="start"
+                                                            checked={value === 0 ?
+                                                                this.checkedFlatforms.indexOf(index) !== -1 :
+                                                                this.checkedGenre.indexOf(index) !== -1}
+                                                            tabIndex={-1}
+                                                            disableRipple
+                                                            inputProps={{ 'aria-labelledby': labelId }}
+                                                        /> :
+                                                        <Radio
+                                                            edge="start"
+                                                            checked={this.checkedDeveloper.indexOf(index) !== -1}
+                                                            tabIndex={-1}
+                                                            disableRipple
+                                                            inputProps={{ 'aria-labelledby': labelId }}
+                                                        />
+                                                }
+
+                                            </ListItemIcon>
+                                            <ListItemText id={labelId} primary={item.name} />
+                                        </ListItem>
+                                    );
+                                })}
+                            </List>
+                        </div>
+                    )
+                })}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <DialogTitle id="alert-dialog-title">Game</DialogTitle>
+                    <TextField
+                        required
+                        label={`Enter game name`}
+                        className={classes.textField}
+                        value={this.nameGame}
+                        onChange={event => this.nameGame = event.target.value}
+                        margin="normal" />
+                    <Button variant="contained" color="secondary">Submit</Button>
+                </div>
+            </div>
+        )
+    }
+
+    Developer = (classes) => {
+        return (
+            <div>
+                <DialogTitle id="alert-dialog-title">Developer</DialogTitle>
+                <DialogContent>
+                    <div id="alert-dialog-description">
+                        <TextField
+                            required
+                            label={`Enter developer name`}
+                            className={classes.textField}
+                            value={this.nameDeveloper}
+                            onChange={event => this.nameDeveloper = event.target.value}
+                            margin="normal" />
+                    </div>
+                    <div id="alert-dialog-description">
+                        <TextField
+                            required
+                            label={`Enter developer URL`}
+                            className={classes.textField}
+                            value={this.developerURL}
+                            onChange={event => this.developerURL = event.target.value}
+                            margin="normal" />
+                    </div>
+                    <div>
+                        <input
+                            accept="image/*"
+                            className={classes.input}
+                            id="contained-button-file-developer"
+                            multiple
+                            type="file"
+                            onChange={this.handleFileChange}
+                        />
+                        <label htmlFor="contained-button-file-developer">
+                            <Button variant="contained" component="span" className={classes.button}>
+                                Select logo image
+                            </Button>
+                        </label>
+                        <List dense className={classes.rootImageList}>
+                            {this.filesDeveloper.map((item, index) => (
+                                <ListItem key={index} button>
+                                    <ListItemText primary={item.name} />
+                                    <ListItemSecondaryAction>
+                                        <ClearIcon onClick={() => this.handleFileDelete(index)} />
+                                    </ListItemSecondaryAction>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </div>
+                    <Button variant="contained" color="secondary" onClick={this.handleCreateDeveloper} >Submit</Button>
+                </DialogContent>
+            </div>
+        )
+    }
+
+    FlatFormGenre = (classes) => {
+        return (
+            [0, 1].map(index => {
+                return (
+                    <div key={index}>
+                        <DialogTitle id="alert-dialog-title">Create new {index === 0 ? 'Flatform' : 'Genre'}</DialogTitle>
+                        <DialogContent>
+                            <div id="alert-dialog-description">
+                                <TextField
+                                    required
+                                    label={`Enter ${index === 0 ? 'flatform' : 'genre'} name`}
+                                    className={classes.textField}
+                                    value={index === 0 ? this.nameFlatform : this.nameGenre}
+                                    onChange={event => index === 0 ? this.nameFlatform = event.target.value : this.nameGenre = event.target.value}
+                                    margin="normal" />
+                            </div>
+                            {
+                                index === 0 ? this.isLoadingFlatform && 'Submiting data...' : this.isLoadingGenre && 'Submiting data...'
+                            }
+                            {
+                                index === 0 ? this.errorFlatform : this.errorGenre
+                            }
+                            <Button color="secondary" variant="contained" onClick={this.handleCreateFlatformGenre} >Submit</Button>
+                        </DialogContent>
+                        <DialogActions>
+
+                        </DialogActions>
+                    </div>
+                )
+            })
+        )
     }
 }
 
@@ -310,6 +526,16 @@ const styles = theme => ({
         maxWidth: 360,
         backgroundColor: theme.palette.background.paper,
     },
+    input: {
+        display: 'none',
+    },
+    button: {
+        margin: theme.spacing(1),
+    },
+    rootImageList: {
+        width: 'fit-content',
+        backgroundColor: theme.palette.background.paper,
+    }
 });
 
 CreateCategories.propTypes = {
