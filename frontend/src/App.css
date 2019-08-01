@@ -30,3 +30,8 @@
     transform: rotate(360deg);
   }
 }
+
+button:focus {
+  /* outline: 1px dotted; */
+  outline: none !important;
+}

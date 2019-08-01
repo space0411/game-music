@@ -7,6 +7,11 @@ import {
     ListItemIcon, IconButton, ListItemText, Checkbox,
     ListItemSecondaryAction, Radio
 } from '@material-ui/core';
+import DateFnsUtils from '@date-io/date-fns';
+import {
+    MuiPickersUtilsProvider,
+    KeyboardDatePicker,
+} from '@material-ui/pickers';
 import ClearIcon from '@material-ui/icons/Clear';
 import CloseIcon from '@material-ui/icons/Close';
 import GameIcon from '@material-ui/icons/Games';
@@ -20,6 +25,7 @@ import { withStyles } from '@material-ui/core/styles';
 
 import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
+import Moment from 'moment';
 
 function TabContainer({ children, dir }) {
     return (
@@ -63,6 +69,8 @@ class CreateCategories extends React.Component {
     @observable checkedDeveloper = []
 
     @observable filesDeveloper = []
+    @observable filesGame = []
+    @observable selectedDate = new Date()
 
     constructor(props) {
         super(props)
@@ -215,6 +223,65 @@ class CreateCategories extends React.Component {
         });
     }
 
+    handleCreateGame = () => {
+        if (!this.nameGame) {
+            alert('Fill a game name')
+            return
+        }
+        const checkedFlatforms = this.checkedFlatforms.map(index => this.flatforms[index].id)
+        console.log(checkedFlatforms);
+        const checkedGenre = this.checkedGenre.map(index => this.genres[index].id)
+        console.log(checkedGenre)
+        const bodyData = {
+            name: this.nameGame,
+            idDeveloper: this.checkedDeveloper.length > 0 ? this.developers[this.checkedDeveloper[0]].id : 0,
+            releaseDate: Moment(this.selectedDate).unix(),
+            flatform: checkedFlatforms,
+            genre: checkedGenre,
+        }
+        fetch(`${this.props.SessionStore.API_URL}game/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: JSON.stringify(bodyData)
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                this.createGameImage(jsonResult.data.game.id)
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    createGameImage(id) {
+        if (!this.filesGame.length > 0 && !id) return
+        var data = new FormData()
+        this.filesGame.forEach((value, index) => data.append(`image${index}`, value.file, value.name))
+        
+        fetch(`${this.props.SessionStore.API_URL}game/image?id=${id}&size=${this.filesGame.length}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: data
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                alert('Upload image success!')
+                this.filesGame.splice(0, this.filesGame.length)
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
     handleToggleFlatform = value => {
         const currentIndex = this.checkedFlatforms.indexOf(value);
         const newChecked = [...this.checkedFlatforms];
@@ -253,17 +320,34 @@ class CreateCategories extends React.Component {
         this.checkedDeveloper = newChecked
     }
 
-    handleFileDelete = index => {
+    handleDeveloperFileDelete = index => {
         this.filesDeveloper.splice(index, 1);
     };
 
-    handleFileChange = e => {
+    handleGameFileDelete = index => {
+        this.filesGame.splice(index, 1);
+    };
+
+    handleDeveloperFileChange = e => {
         const value = e.target.value
-        console.log('handleFileChange', value)
+        console.log('handleDeveloperFileChange', value)
         if (value) {
             var file = e.target.files
             this.filesDeveloper = [...this.filesDeveloper, { 'name': value, 'file': file[0] }]
         }
+    }
+
+    handleGameFileChange = e => {
+        const value = e.target.value
+        console.log('handleGameFileChange', value)
+        if (value) {
+            var file = e.target.files
+            this.filesGame = [...this.filesGame, { 'name': value, 'file': file[0] }]
+        }
+    }
+
+    handleDateChange = (date) => {
+        this.selectedDate = date
     }
 
     render() {
@@ -403,6 +487,18 @@ class CreateCategories extends React.Component {
                 })}
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <DialogTitle id="alert-dialog-title">Game</DialogTitle>
+                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                        <KeyboardDatePicker
+                            margin="normal"
+                            id="mui-pickers-date"
+                            label="Release Date"
+                            value={this.selectedDate}
+                            onChange={this.handleDateChange}
+                            KeyboardButtonProps={{
+                                'aria-label': 'change date',
+                            }}
+                        />
+                    </MuiPickersUtilsProvider>
                     <TextField
                         required
                         label={`Enter game name`}
@@ -410,7 +506,32 @@ class CreateCategories extends React.Component {
                         value={this.nameGame}
                         onChange={event => this.nameGame = event.target.value}
                         margin="normal" />
-                    <Button variant="contained" color="secondary">Submit</Button>
+                    <div>
+                        <input
+                            accept="image/*"
+                            className={classes.input}
+                            id="contained-button-file-game"
+                            multiple
+                            type="file"
+                            onChange={this.handleGameFileChange}
+                        />
+                        <label htmlFor="contained-button-file-game">
+                            <Button variant="contained" component="span" className={classes.button}>
+                                Select game image
+                            </Button>
+                        </label>
+                        <List dense className={classes.rootImageList}>
+                            {this.filesGame.map((item, index) => (
+                                <ListItem key={index} button>
+                                    <ListItemText primary={item.name} />
+                                    <ListItemSecondaryAction>
+                                        <ClearIcon onClick={() => this.handleGameFileDelete(index)} />
+                                    </ListItemSecondaryAction>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </div>
+                    <Button onClick={this.handleCreateGame} variant="contained" color="secondary">Submit</Button>
                 </div>
             </div>
         )
@@ -446,7 +567,7 @@ class CreateCategories extends React.Component {
                             id="contained-button-file-developer"
                             multiple
                             type="file"
-                            onChange={this.handleFileChange}
+                            onChange={this.handleDeveloperFileChange}
                         />
                         <label htmlFor="contained-button-file-developer">
                             <Button variant="contained" component="span" className={classes.button}>
@@ -458,7 +579,7 @@ class CreateCategories extends React.Component {
                                 <ListItem key={index} button>
                                     <ListItemText primary={item.name} />
                                     <ListItemSecondaryAction>
-                                        <ClearIcon onClick={() => this.handleFileDelete(index)} />
+                                        <ClearIcon onClick={() => this.handleDeveloperFileDelete(index)} />
                                     </ListItemSecondaryAction>
                                 </ListItem>
                             ))}

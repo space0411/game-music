@@ -6,6 +6,11 @@ import {
     TextField, List, ListItem, ListItemText,
     ListItemSecondaryAction
 } from '@material-ui/core';
+import DateFnsUtils from '@date-io/date-fns';
+import {
+    MuiPickersUtilsProvider,
+    KeyboardDatePicker,
+} from '@material-ui/pickers';
 import { Clear } from '@material-ui/icons';
 import { observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
@@ -21,7 +26,6 @@ class CreateProductsScreen extends React.Component {
     @observable isEditProductMode = false
     @observable categoriesList = []
     @observable selectedCate
-    @observable selectedChildCate
     state = {
         cateName: '',
         cateChildName: ''
@@ -34,14 +38,13 @@ class CreateProductsScreen extends React.Component {
     @observable openAlertFlatformGenre = false
 
     @observable name = ''
-    @observable quantity = ''
-    @observable price = ''
-    @observable unit = ''
-    @observable view
+    @observable numberOfFile = ''
+    @observable view = ''
     @observable shortdetail = ''
     @observable fulldetail = ''
     @observable files = []
     @observable prevCate = ''
+    @observable selectedDate = new Date()
 
     constructor(props) {
         super(props);
@@ -50,7 +53,7 @@ class CreateProductsScreen extends React.Component {
 
     handleNewProductsClick = (e) => {
         e.preventDefault()
-        if (!this.name || !this.quantity || !this.price || !this.unit || !this.selectedCate || !this.selectedChildCate) {
+        if (!this.name || !this.numberOfFile || !this.price || !this.unit || !this.selectedCate) {
             this.openAlert = true
             return
         }
@@ -62,13 +65,12 @@ class CreateProductsScreen extends React.Component {
             },
             body: JSON.stringify({
                 name: this.name,
-                quantity: this.quantity,
+                quantity: this.numberOfFile,
                 price: this.price,
                 unit: this.unit,
                 view: 0,
                 // createdBy: this.props.SessionStore.getUserID(),
                 type: this.selectedCate.id,
-                maintype: this.selectedChildCate.id,
                 shortdetail: this.shortdetail,
                 fulldetail: this.fulldetail
             })
@@ -90,7 +92,7 @@ class CreateProductsScreen extends React.Component {
 
     handleUpdateProductsClick = (e) => {
         e.preventDefault()
-        if (!this.productData || !this.name || !this.quantity || !this.price || !this.unit || !this.selectedCate || !this.selectedChildCate) {
+        if (!this.productData || !this.name || !this.numberOfFile || !this.price || !this.unit || !this.selectedCate) {
             this.openAlert = true
             return
         }
@@ -103,13 +105,12 @@ class CreateProductsScreen extends React.Component {
             body: JSON.stringify({
                 id: this.productData.id,
                 name: this.name,
-                quantity: this.quantity,
+                quantity: this.numberOfFile,
                 price: this.price,
                 unit: this.unit,
                 view: 0,
                 // createdBy: this.props.SessionStore.getUserID(),
                 type: this.selectedCate.id,
-                maintype: this.selectedChildCate.id,
                 shortdetail: this.shortdetail,
                 fulldetail: this.fulldetail
             })
@@ -160,12 +161,6 @@ class CreateProductsScreen extends React.Component {
     handleChange = event => {
         this.selectedCate = this.categoriesList[event.target.value]
         console.log(this.selectedCate);
-        this.setState({ [event.target.name]: event.target.value });
-    };
-
-    handleChildChange = event => {
-        this.selectedChildCate = this.selectedCate.childlist[event.target.value]
-        console.log(this.selectedChildCate);
         this.setState({ [event.target.name]: event.target.value });
     };
 
@@ -227,7 +222,10 @@ class CreateProductsScreen extends React.Component {
 
     handleChangeAll = () => {
         this.handleCloseCreateFlatformGenre()
+    }
 
+    handleDateChange = (date) => {
+        this.selectedDate = date
     }
 
     render() {
@@ -265,29 +263,10 @@ class CreateProductsScreen extends React.Component {
                     </Select>
                     <FormHelperText>Select a main category</FormHelperText>
                 </FormControl>
-                <FormControl className={classes.formControl}>
-                    <Select
-                        value={this.state.cateChildName}
-                        onChange={this.handleChildChange}
-                        name="cateChildName"
-                        displayEmpty
-                        className={classes.selectEmpty}
-                    >
-                        <MenuItem value="" disabled>
-                            Content Categories
-                        </MenuItem>
-                        {this.selectedCate &&
-                            this.selectedCate.childlist.map((item, index) => (
-                                <MenuItem key={index} value={index}>{item.name}</MenuItem>
-                            ))
-                        }
-                    </Select>
-                    <FormHelperText>Select a content category</FormHelperText>
-                </FormControl>
                 <Button variant="contained" className={classes.button} onClick={this.handleRefeshCateClick} color="primary">Refesh Categories</Button>
                 {this.isEditProductMode && <h6>{this.prevCate}</h6>}
-                <br></br>
                 <Button variant="contained" className={classes.button} onClick={this.handleNewFlatformGenre} color="primary">New Flatform & Genre</Button>
+                <br></br>
                 <TextField
                     required
                     label="Product Name"
@@ -297,34 +276,33 @@ class CreateProductsScreen extends React.Component {
                     margin="normal" />
                 <TextField
                     required
-                    label="Quantity"
+                    label="Number Of File"
+                    type="number"
                     className={classes.textField}
-                    value={this.quantity}
-                    onChange={event => this.quantity = event.target.value}
-                    margin="normal" />
-                <br></br>
-                <TextField
-                    required
-                    label="Price"
-                    className={classes.textField}
-                    value={this.price}
-                    onChange={event => this.price = event.target.value}
-                    margin="normal" />
-                <TextField
-                    required
-                    label="Unit"
-                    className={classes.textField}
-                    value={this.unit}
-                    onChange={event => this.unit = event.target.value}
+                    value={this.numberOfFile}
+                    onChange={event => this.numberOfFile = event.target.value}
                     margin="normal" />
                 <br></br>
                 <TextField
                     label="View"
+                    type="number"
                     className={classes.textField}
                     value={this.view}
                     onChange={event => this.view = event.target.value}
                     margin="normal"
                 />
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                    <KeyboardDatePicker
+                        margin="normal"
+                        id="mui-pickers-date"
+                        label="Release Date"
+                        value={this.selectedDate}
+                        onChange={this.handleDateChange}
+                        KeyboardButtonProps={{
+                            'aria-label': 'change date',
+                        }}
+                    />
+                </MuiPickersUtilsProvider>
                 <h5>Short Detail</h5>
                 <CKEditor
                     data={this.shortdetail}
@@ -378,7 +356,7 @@ class CreateProductsScreen extends React.Component {
             this.isEditProductMode = true
             if (productData) {
                 this.name = productData.name
-                this.quantity = productData.quantity
+                this.numberOfFile = productData.quantity
                 this.price = productData.price
                 this.unit = productData.unit
                 this.view = productData.view
@@ -394,7 +372,7 @@ class CreateProductsScreen extends React.Component {
     }
 
     handleGetCategory = () => {
-        fetch(`${this.props.SessionStore.API_URL}categories/read`, {
+        fetch(`${this.props.SessionStore.API_URL}game/read`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -423,7 +401,6 @@ class CreateProductsScreen extends React.Component {
                     value.childlist.every(childValue => {
                         if (childValue.id === productData.type) {
                             cateChildName = childValue.name
-                            this.selectedChildCate = childValue
                             this.prevCate = cateName + ' -> ' + cateChildName
                             return true
                         } else {
@@ -437,7 +414,6 @@ class CreateProductsScreen extends React.Component {
             })
         }
         console.log('category', this.selectedCate);
-        console.log('category child', this.selectedChildCate);
     }
 
 
