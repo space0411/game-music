@@ -51,7 +51,7 @@ class EnhancedTableToolbar extends React.Component {
                         </Typography>
                     ) : (
                             <Typography variant="h6" id="tableTitle">
-                                Products
+                                List of
                             </Typography>
                         )}
                 </div>

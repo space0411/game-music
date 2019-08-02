@@ -21,6 +21,10 @@ import UserScreen from './components/UserScreen';
 import CreateUserScreen from './components/CreateUserScreen';
 import ProductsScreen from './components/ProductsScreen';
 import CreateProductsScreen from './components/CreateProductScreen';
+import FlatformScreen from './components/FlatformScreen';
+import GenreScreen from './components/GenreScreen';
+import GameScreen from './components/GameScreen';
+import DeveloperScreen from './components/DeveloperScreen';
 
 const drawerWidth = 300;
 
@@ -178,6 +182,10 @@ class App extends Component {
                   <Route path="/product" component={ProductsScreen} />
                   <Route path="/new-product" component={CreateProductsScreen} />
                   <Route path="/edit-product" component={CreateProductsScreen} />
+                  <Route path="/flatform" component={FlatformScreen} />
+                  <Route path="/genre" component={GenreScreen} />
+                  <Route path="/game" component={GameScreen} />
+                  <Route path="/developer" component={DeveloperScreen} />
                 </Switch>
               </main>
             </div>

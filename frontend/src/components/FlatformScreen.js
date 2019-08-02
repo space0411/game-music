@@ -7,25 +7,15 @@ import {
     Table, TableBody, TableCell, TablePagination, TableRow,
     Paper, Checkbox, IconButton
 } from '@material-ui/core';
-import { green } from '@material-ui/core/colors';
 import { Delete, Edit } from '@material-ui/icons';
 import { Redirect } from "react-router-dom";
-import Moment from 'react-moment';
 
 import EnhancedTableHead from './table/EnhancedTableHead';
 import EnhancedTableToolbar from './table/EnhancedTableToolbar';
 import AlertDialog from './dialog/AlertDialog';
+import EditDialog from './dialog/EditDialog';
 import { HeadStyle } from './table/HeadKey';
 
-const GreenCheckbox = withStyles({
-    root: {
-        color: green[400],
-        '&$checked': {
-            color: green[600],
-        },
-    },
-    checked: {},
-})(props => <Checkbox color="default" {...props} />);
 
 function desc(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -73,18 +63,24 @@ const styles = theme => ({
 
 @inject('ScreenStore', 'SessionStore')
 @observer
-class ProductsScreen extends React.Component {
+class FlatformScreen extends React.Component {
     @observable data = []
     @observable openAlert = false
+    @observable openEditAlert = false
     @observable productId
     @observable alert = {
         title: 'Alert',
         content: 'Do you want delete ?'
     }
 
+    @observable alertEdit = {
+        title: 'Edit',
+        content: 'Fill a name for edit'
+    }
+
     constructor(props) {
         super(props);
-        this.props.ScreenStore.setTitle('Products')
+        this.props.ScreenStore.setTitle('Flatform')
     }
 
     state = {
@@ -146,7 +142,12 @@ class ProductsScreen extends React.Component {
     isSelected = id => this.state.selected.indexOf(id) !== -1;
 
     handleEditClick = (item) => {
-        this.props.ScreenStore.setEditEventStage(true, item)
+        const data = {
+            id: item.id,
+            name: item.name
+        }
+        this.alertEdit = { ...this.alertEdit, ...data }
+        this.openEditAlert = true
     }
 
     handleDeleteClick = (item) => {
@@ -162,9 +163,19 @@ class ProductsScreen extends React.Component {
         this.openAlert = false
     }
 
+    handleEditAlertClose = () => {
+        this.openEditAlert = false
+    }
+
     handleAgreeDelete = () => {
         this.openAlert = false
-        this.deleteProducts(this.productId)
+        this.deleteFlatform(this.productId)
+    }
+
+    handleAgreeEdit = (name, id) => {
+        console.log(name, id)
+        this.openEditAlert = false
+        this.editFlatform(name, id)
     }
 
     render() {
@@ -179,11 +190,12 @@ class ProductsScreen extends React.Component {
         return (
             <Paper className={classes.root}>
                 <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
+                <EditDialog handleClose={this.handleEditAlertClose} handleAgree={this.handleAgreeEdit} data={this.alertEdit} open={this.openEditAlert} />
                 <EnhancedTableToolbar numSelected={selected.length} />
                 <div className={classes.tableWrapper}>
                     <Table className={classes.table} aria-labelledby="tableTitle">
                         <EnhancedTableHead
-                            headStyle={HeadStyle.Product}
+                            headStyle={HeadStyle.Flatform}
                             numSelected={selected.length}
                             order={order}
                             orderBy={orderBy}
@@ -213,14 +225,8 @@ class ProductsScreen extends React.Component {
                                             <TableCell component="th" scope="row" padding="none">
                                                 {n.name}
                                             </TableCell>
-                                            <TableCell align="left">{n.idGame}</TableCell>
-                                            <TableCell align="right"><Moment format="D MMM YYYY" unix>{n.releaseDate}</Moment></TableCell>
-                                            <TableCell align="right">{n.createdBy}</TableCell>
-                                            <TableCell align="center">{n.numberOfFile}</TableCell>
-                                            <TableCell align="right">{n.view}</TableCell>
-                                            <TableCell padding="checkbox"><GreenCheckbox checked={n.publish} /></TableCell>
                                             <TableCell align="right">
-                                                <div className="d-flex flex-row">
+                                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
                                                     <IconButton onClick={() => this.handleEditClick(n)} color="primary" className={classes.button} aria-label="Edit">
                                                         <Edit />
                                                     </IconButton>
@@ -260,11 +266,11 @@ class ProductsScreen extends React.Component {
     }
 
     componentDidMount() {
-        this.getProducts()
+        this.getFlatform()
     }
 
-    getProducts() {
-        fetch(`${this.props.SessionStore.API_URL}product/read`, {
+    getFlatform() {
+        fetch(`${this.props.SessionStore.API_URL}flatform/read`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -286,8 +292,31 @@ class ProductsScreen extends React.Component {
         });
     }
 
-    deleteProducts(productId) {
-        fetch(`${this.props.SessionStore.API_URL}product/delete`, {
+    editFlatform(name, id) {
+        fetch(`${this.props.SessionStore.API_URL}flatform/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: JSON.stringify({
+                id: id,
+                name: name
+            })
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                this.data = this.data.map(value => value.id === id ? jsonResult.data : value)
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    deleteFlatform(productId) {
+        fetch(`${this.props.SessionStore.API_URL}flatform/delete`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -302,7 +331,6 @@ class ProductsScreen extends React.Component {
             console.log(jsonResult);
             if (jsonResult.success) {
                 this.data = this.data.filter(item => item.id !== productId)
-                this.handleClick(undefined, productId)
             }
         }).catch((error) => {
             console.error(error);
@@ -310,8 +338,8 @@ class ProductsScreen extends React.Component {
     }
 }
 
-ProductsScreen.propTypes = {
+FlatformScreen.propTypes = {
     classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(ProductsScreen);
+export default withStyles(styles)(FlatformScreen);

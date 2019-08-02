@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import {
     Button, FormControl, Select, MenuItem, FormHelperText,
     TextField, List, ListItem, ListItemText,
-    ListItemSecondaryAction
+    ListItemSecondaryAction, Checkbox, FormControlLabel
 } from '@material-ui/core';
 import DateFnsUtils from '@date-io/date-fns';
 import {
@@ -17,6 +17,7 @@ import { inject, observer } from 'mobx-react';
 import AlertDialog from './dialog/AlertDialog';
 import CKEditor from 'ckeditor4-react';
 import CreateCategories from './CreateCategories';
+import Moment from 'moment';
 
 
 @inject('ScreenStore', 'SessionStore')
@@ -38,13 +39,14 @@ class CreateProductsScreen extends React.Component {
     @observable openAlertFlatformGenre = false
 
     @observable name = ''
-    @observable numberOfFile = ''
-    @observable view = ''
-    @observable shortdetail = ''
-    @observable fulldetail = ''
+    @observable numberOfFile = 0
+    @observable view = 0
+    @observable shortDetail = ''
+    @observable fullDetail = ''
     @observable files = []
     @observable prevCate = ''
     @observable selectedDate = new Date()
+    @observable isPublish = true
 
     constructor(props) {
         super(props);
@@ -53,7 +55,7 @@ class CreateProductsScreen extends React.Component {
 
     handleNewProductsClick = (e) => {
         e.preventDefault()
-        if (!this.name || !this.numberOfFile || !this.price || !this.unit || !this.selectedCate) {
+        if (!this.name || !this.selectedCate) {
             this.openAlert = true
             return
         }
@@ -65,14 +67,13 @@ class CreateProductsScreen extends React.Component {
             },
             body: JSON.stringify({
                 name: this.name,
-                quantity: this.numberOfFile,
-                price: this.price,
-                unit: this.unit,
-                view: 0,
-                // createdBy: this.props.SessionStore.getUserID(),
-                type: this.selectedCate.id,
-                shortdetail: this.shortdetail,
-                fulldetail: this.fulldetail
+                numberOfFile: this.numberOfFile,
+                releaseDate: Moment(this.selectedDate).unix(),
+                view: this.view,
+                idGame: this.selectedCate.id,
+                shortDetail: this.shortDetail,
+                fullDetail: this.fullDetail,
+                publish:  this.isPublish
             })
         }).then((result) => {
             return result.json();
@@ -105,14 +106,13 @@ class CreateProductsScreen extends React.Component {
             body: JSON.stringify({
                 id: this.productData.id,
                 name: this.name,
-                quantity: this.numberOfFile,
-                price: this.price,
-                unit: this.unit,
-                view: 0,
-                // createdBy: this.props.SessionStore.getUserID(),
-                type: this.selectedCate.id,
-                shortdetail: this.shortdetail,
-                fulldetail: this.fulldetail
+                numberOfFile: this.numberOfFile,
+                releaseDate: Moment(this.selectedDate).unix(),
+                view: this.view,
+                idGame: this.selectedCate.id,
+                shortDetail: this.shortDetail,
+                fullDetail: this.fullDetail,
+                publish:  this.isPublish
             })
         }).then((result) => {
             return result.json();
@@ -138,7 +138,7 @@ class CreateProductsScreen extends React.Component {
         this.files.forEach((item, index) => {
             data.append(`image${index}`, item.file, item.name)
         })
-        fetch(`${this.props.SessionStore.API_URL}product/image?productid=${productid}&size=${this.files.length}`, {
+        fetch(`${this.props.SessionStore.API_URL}product/image?id=${productid}&size=${this.files.length}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
@@ -191,11 +191,11 @@ class CreateProductsScreen extends React.Component {
     };
 
     onEditorShortChange = (evt) => {
-        this.shortdetail = evt.editor.getData()
+        this.shortDetail = evt.editor.getData()
     }
 
     onEditorFullChange = (evt) => {
-        this.fulldetail = evt.editor.getData()
+        this.fullDetail = evt.editor.getData()
     }
 
     handleRefeshCateClick = (e) => {
@@ -228,6 +228,10 @@ class CreateProductsScreen extends React.Component {
         this.selectedDate = date
     }
 
+    handlePublishChange = () => {
+        this.isPublish = !this.isPublish
+    }
+
     render() {
         const { classes } = this.props;
         return (
@@ -244,6 +248,10 @@ class CreateProductsScreen extends React.Component {
                     handleClose={this.handleClose}
                     data={this.alert} />
                 <h5>Product information</h5>
+                <Button variant="contained" className={classes.button} onClick={this.handleRefeshCateClick} color="primary">Refesh Categories</Button>
+                {this.isEditProductMode && <h6>{this.prevCate}</h6>}
+                <Button variant="contained" className={classes.button} onClick={this.handleNewFlatformGenre} color="primary">New Flatform & Genre</Button>
+                <br></br>
                 <FormControl className={classes.formControl}>
                     <Select
                         value={this.state.cateName}
@@ -263,9 +271,20 @@ class CreateProductsScreen extends React.Component {
                     </Select>
                     <FormHelperText>Select a main category</FormHelperText>
                 </FormControl>
-                <Button variant="contained" className={classes.button} onClick={this.handleRefeshCateClick} color="primary">Refesh Categories</Button>
-                {this.isEditProductMode && <h6>{this.prevCate}</h6>}
-                <Button variant="contained" className={classes.button} onClick={this.handleNewFlatformGenre} color="primary">New Flatform & Genre</Button>
+                <br></br>
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={this.isPublish}
+                            onChange={this.handlePublishChange}
+                            value="Publish"
+                            inputProps={{
+                                'aria-label': 'primary checkbox',
+                            }}
+                        />
+                    }
+                    label="Publish"
+                />
                 <br></br>
                 <TextField
                     required
@@ -275,7 +294,6 @@ class CreateProductsScreen extends React.Component {
                     onChange={event => this.name = event.target.value}
                     margin="normal" />
                 <TextField
-                    required
                     label="Number Of File"
                     type="number"
                     className={classes.textField}
@@ -305,13 +323,13 @@ class CreateProductsScreen extends React.Component {
                 </MuiPickersUtilsProvider>
                 <h5>Short Detail</h5>
                 <CKEditor
-                    data={this.shortdetail}
+                    data={this.shortDetail}
                     type="classic"
                     onChange={this.onEditorShortChange} />
                 <br></br>
                 <h5>Full Detail</h5>
                 <CKEditor
-                    data={this.fulldetail}
+                    data={this.fullDetail}
                     type="classic"
                     onChange={this.onEditorFullChange} />
                 <input
@@ -360,8 +378,8 @@ class CreateProductsScreen extends React.Component {
                 this.price = productData.price
                 this.unit = productData.unit
                 this.view = productData.view
-                this.shortdetail = productData.shortdetail
-                this.fulldetail = productData.fulldetail
+                this.shortDetail = productData.shortdetail
+                this.fullDetail = productData.fulldetail
                 //this.files = []
             } else {
                 console.log('Product data is null! Need back to prev page.')
