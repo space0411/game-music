@@ -213,10 +213,10 @@ class ProductsScreen extends React.Component {
                                             <TableCell component="th" scope="row" padding="none">
                                                 {n.name}
                                             </TableCell>
-                                            <TableCell align="left">{n.idGame}</TableCell>
+                                            <TableCell align="right">{n.idGame}</TableCell>
                                             <TableCell align="right"><Moment format="D MMM YYYY" unix>{n.releaseDate}</Moment></TableCell>
                                             <TableCell align="right">{n.createdBy}</TableCell>
-                                            <TableCell align="center">{n.numberOfFile}</TableCell>
+                                            <TableCell align="right">{n.numberOfFile}</TableCell>
                                             <TableCell align="right">{n.view}</TableCell>
                                             <TableCell padding="checkbox"><GreenCheckbox checked={n.publish} /></TableCell>
                                             <TableCell align="right">

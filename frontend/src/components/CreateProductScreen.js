@@ -4,20 +4,21 @@ import { withStyles } from '@material-ui/core/styles';
 import {
     Button, FormControl, Select, MenuItem, FormHelperText,
     TextField, List, ListItem, ListItemText,
-    ListItemSecondaryAction, Checkbox, FormControlLabel
+    ListItemSecondaryAction, Checkbox, FormControlLabel, IconButton
 } from '@material-ui/core';
 import DateFnsUtils from '@date-io/date-fns';
 import {
     MuiPickersUtilsProvider,
     KeyboardDatePicker,
 } from '@material-ui/pickers';
-import { Clear } from '@material-ui/icons';
+import { Clear, Delete, QueueMusic } from '@material-ui/icons';
 import { observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import AlertDialog from './dialog/AlertDialog';
 import CKEditor from 'ckeditor4-react';
 import CreateCategories from './CreateCategories';
 import Moment from 'moment';
+import MusicDialog from './MusicDialog';
 
 
 @inject('ScreenStore', 'SessionStore')
@@ -35,8 +36,15 @@ class CreateProductsScreen extends React.Component {
         title: 'Ops!',
         content: 'Please fill required information'
     }
+    @observable alertRemoveImage = {
+        title: 'Alert',
+        content: 'Do you want remove image?'
+    }
     @observable openAlert = false
+    @observable openRemoveImageAlert = false
     @observable openAlertFlatformGenre = false
+    @observable openMusic = false
+    @observable selectedImage
 
     @observable name = ''
     @observable numberOfFile = 0
@@ -44,6 +52,7 @@ class CreateProductsScreen extends React.Component {
     @observable shortDetail = ''
     @observable fullDetail = ''
     @observable files = []
+    @observable filesLive = []
     @observable prevCate = ''
     @observable selectedDate = new Date()
     @observable isPublish = true
@@ -73,7 +82,7 @@ class CreateProductsScreen extends React.Component {
                 idGame: this.selectedCate.id,
                 shortDetail: this.shortDetail,
                 fullDetail: this.fullDetail,
-                publish:  this.isPublish
+                publish: this.isPublish
             })
         }).then((result) => {
             return result.json();
@@ -93,7 +102,7 @@ class CreateProductsScreen extends React.Component {
 
     handleUpdateProductsClick = (e) => {
         e.preventDefault()
-        if (!this.productData || !this.name || !this.numberOfFile || !this.price || !this.unit || !this.selectedCate) {
+        if (!this.productData || !this.name || !this.selectedCate) {
             this.openAlert = true
             return
         }
@@ -112,7 +121,7 @@ class CreateProductsScreen extends React.Component {
                 idGame: this.selectedCate.id,
                 shortDetail: this.shortDetail,
                 fullDetail: this.fullDetail,
-                publish:  this.isPublish
+                publish: this.isPublish
             })
         }).then((result) => {
             return result.json();
@@ -123,8 +132,8 @@ class CreateProductsScreen extends React.Component {
                 content: jsonResult.message
             }
             this.openAlert = true
-            // if (jsonResult.success)
-            //     this.uploadImage(jsonResult.data.id)
+            if (jsonResult.success)
+                this.uploadImage(jsonResult.data.id)
         }).catch((error) => {
             console.error(error);
         });
@@ -188,6 +197,8 @@ class CreateProductsScreen extends React.Component {
 
     handleClose = () => {
         this.openAlert = false
+        this.openRemoveImageAlert = false
+        this.openMusic = false
     };
 
     onEditorShortChange = (evt) => {
@@ -232,6 +243,20 @@ class CreateProductsScreen extends React.Component {
         this.isPublish = !this.isPublish
     }
 
+    handleRemoveImage = () => {
+        this.deleteImage(this.selectedImage)
+    }
+
+    handleRemoveLiveImage = (item) => {
+        this.openRemoveImageAlert = true
+        this.selectedImage = item
+        console.log(this.selectedImage)
+    }
+
+    handleOpenMusicDialog = () => {
+        this.openMusic = true
+    }
+
     render() {
         const { classes } = this.props;
         return (
@@ -242,15 +267,26 @@ class CreateProductsScreen extends React.Component {
                     isGenreChange={this.handleGenreChange}
                     isChangeAll={this.handleChangeAll}
                     handleClose={this.handleCloseCreateFlatformGenre} />
+                <MusicDialog
+                    open={this.openMusic}
+                    handleClose={this.handleClose} />
                 <AlertDialog
                     open={this.openAlert}
                     handleOke={this.handleClose}
                     handleClose={this.handleClose}
                     data={this.alert} />
+                <AlertDialog
+                    open={this.openRemoveImageAlert}
+                    handleDisagree={this.handleClose}
+                    handleAgree={this.handleRemoveImage}
+                    handleClose={this.handleClose}
+                    data={this.alertRemoveImage} />
                 <h5>Product information</h5>
                 <Button variant="contained" className={classes.button} onClick={this.handleRefeshCateClick} color="primary">Refesh Categories</Button>
-                {this.isEditProductMode && <h6>{this.prevCate}</h6>}
                 <Button variant="contained" className={classes.button} onClick={this.handleNewFlatformGenre} color="primary">New Flatform & Genre</Button>
+                <Button variant="contained" className={classes.button} onClick={this.handleOpenMusicDialog} color="secondary">
+                    Music<QueueMusic className={classes.rightIcon} />
+                </Button>
                 <br></br>
                 <FormControl className={classes.formControl}>
                     <Select
@@ -271,6 +307,7 @@ class CreateProductsScreen extends React.Component {
                     </Select>
                     <FormHelperText>Select a main category</FormHelperText>
                 </FormControl>
+                {this.isEditProductMode && <div>Selected:<h6>{this.prevCate}</h6></div>}
                 <br></br>
                 <FormControlLabel
                     control={
@@ -345,6 +382,29 @@ class CreateProductsScreen extends React.Component {
                         Select image
                     </Button>
                 </label>
+                <br></br>
+                {this.isEditProductMode &&
+                    <div>Live image:
+                    <div style={{ display: 'flex' }}>
+                            {this.filesLive.map((item, index) => (
+                                <div key={index} style={{ textAlign: 'center' }}>
+                                    <div style={{
+                                        backgroundImage: `url(http://localhost:1338/image?name=product/${item.url})`,
+                                        width: 200,
+                                        height: 200,
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center',
+                                        positions: 'relative'
+                                    }} />
+                                    <IconButton className={classes.button} aria-label="delete" onClick={() => this.handleRemoveLiveImage(item)}>
+                                        <Delete />
+                                    </IconButton>
+                                </div>
+                            ))}
+                        </div>
+                    </div>}
+                <br></br>
+                Local image:
                 <List dense className={classes.rootImageList}>
                     {this.files.map((item, index) => (
                         <ListItem key={index} button>
@@ -374,17 +434,17 @@ class CreateProductsScreen extends React.Component {
             this.isEditProductMode = true
             if (productData) {
                 this.name = productData.name
-                this.numberOfFile = productData.quantity
-                this.price = productData.price
-                this.unit = productData.unit
+                this.numberOfFile = productData.numberOfFile
+                this.releaseDate = productData.releaseDate
                 this.view = productData.view
-                this.shortDetail = productData.shortdetail
-                this.fullDetail = productData.fulldetail
+                this.shortDetail = productData.shortDetail
+                this.fullDetail = productData.fullDetail
+                this.publish = productData.publish
+                this.filesLive = productData.images
                 //this.files = []
             } else {
                 console.log('Product data is null! Need back to prev page.')
             }
-            this.props.ScreenStore.clearEditEventStage()
         }
         this.handleGetCategory()
     }
@@ -406,30 +466,45 @@ class CreateProductsScreen extends React.Component {
         });
     }
 
+    deleteImage = (item) => {
+        fetch(`${this.props.SessionStore.API_URL}product/removeimage`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: JSON.stringify({ id: item.id, url: item.url })
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                this.filesLive = this.filesLive.filter(value => value.id !== item.id)
+            }
+            this.openRemoveImageAlert = false
+            this.selectedImage = undefined
+        }).catch((error) => {
+            console.error(error);
+            this.openRemoveImageAlert = false
+            this.selectedImage = undefined
+        });
+    }
+
     setDefaultForEdit(categoriesList) {
         if (this.props.ScreenStore.isEditEventStage) {
             const productData = this.props.ScreenStore.editEventData
             if (categoriesList.length > 0 && productData)
-                console.log('error hfhf');
-            categoriesList.some(value => {
-                if (value.id === productData.maintype) {
-                    const cateName = value.name
-                    let cateChildName = ''
-                    this.selectedCate = value
-                    value.childlist.every(childValue => {
-                        if (childValue.id === productData.type) {
-                            cateChildName = childValue.name
-                            this.prevCate = cateName + ' -> ' + cateChildName
-                            return true
-                        } else {
-                            return false
-                        }
-                    })
-                    return true
-                } else {
-                    return false
-                }
-            })
+                categoriesList.some(value => {
+                    if (value.id === productData.idGame) {
+                        const cateName = value.name
+                        this.selectedCate = value
+                        this.prevCate = cateName
+                        return true
+                    } else {
+                        return false
+                    }
+                })
+            this.props.ScreenStore.clearEditEventStage()
         }
         console.log('category', this.selectedCate);
     }
