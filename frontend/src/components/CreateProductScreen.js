@@ -176,7 +176,7 @@ class CreateProductsScreen extends React.Component {
     handleFileChange = e => {
         console.log(e.target.value)
         if (e.target.value) {
-            var value = e.target.value
+            // var value = e.target.value
             var files = e.target.files
             var self = this
             // var maxWidth = 600
@@ -186,7 +186,7 @@ class CreateProductsScreen extends React.Component {
             //     self.files.push({ 'name': value, 'file': resizedDataUrl })
             //     self.files = self.files.slice()
             // });
-            self.files.push({ 'name': value, 'file': files[0] })
+            self.files.push({ 'name': files[0].name, 'file': files[0] })
             self.files = self.files.slice()
         }
     }
