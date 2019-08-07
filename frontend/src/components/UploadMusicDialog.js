@@ -24,12 +24,14 @@ class UploadMusicDialog extends React.Component {
         let err = ''
         // list allow mime type
         const types = ['image/png', 'image/jpeg', 'image/gif']
-        // loop access array
         for (var x = 0; x < files.length; x++) {
-            // compare file type find doesn't matach
-            if (types.every(type => files[x].type !== type)) {
-                // create error message and assign to container   
-                err += files[x].type + ' is not a supported format\n';
+            for (var y = 0; y < types.length; y++) {
+                if (files[x].type !== types[y])
+                    err += files[x].type + ' is not a supported format\n';
+                else {
+                    err = ''
+                    break
+                }
             }
         };
 
@@ -41,10 +43,10 @@ class UploadMusicDialog extends React.Component {
         return true;
 
     }
-    handleFileChange = (e) => {
-        const value = e.target.value
-        if (value) {
-            this.props.handleMusicFileChange(e.target.files)
+    handleFileChange = (event) => {
+        var files = event.target.files
+        if (this.checkMimeType(event)) {
+            this.props.handleMusicFileChange(files)
         }
     }
     render() {
@@ -76,8 +78,7 @@ class UploadMusicDialog extends React.Component {
                         </div>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={handleClose} color="primary">Cancel</Button>
-                        <Button onClick={handleClose} color="primary">Subscribe</Button>
+                        <Button onClick={handleClose} color="primary">Close</Button>
                     </DialogActions>
                 </Dialog>
             </div>
