@@ -18,12 +18,11 @@ function PaperComponent(props) {
 class UploadMusicDialog extends React.Component {
     checkMimeType = (event) => {
         // https://programmingwithmosh.com/javascript/react-file-upload-proper-server-side-nodejs-easy/
-        //getting file object
         let files = event.target.files
-        //define message container
         let err = ''
         // list allow mime type
-        const types = ['image/png', 'image/jpeg', 'image/gif']
+        // const types = ['image/png', 'image/jpeg', 'image/gif']
+        const types = ['audio/mp3']
         for (var x = 0; x < files.length; x++) {
             for (var y = 0; y < types.length; y++) {
                 if (files[x].type !== types[y])
@@ -35,8 +34,8 @@ class UploadMusicDialog extends React.Component {
             }
         };
 
-        if (err !== '') { // if message not same old that mean has error 
-            event.target.value = null // discard selected file
+        if (err !== '') {
+            event.target.value = null
             console.log(err)
             return false;
         }
@@ -65,7 +64,7 @@ class UploadMusicDialog extends React.Component {
                     <DialogContent>
                         <div style={{ width: 300, height: 200, border: '1px dotted red', borderRadius: 5 }}>
                             <input
-                                accept="image/*"
+                                accept="audio/*"
                                 className={classes.input}
                                 id="contained-button-file-music-upload"
                                 multiple

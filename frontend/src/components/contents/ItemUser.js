@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import '../css/ItemEvent.css';
-import { Button } from 'reactstrap';
+import Button from '@material-ui/core/Button';
 import { inject, observer } from 'mobx-react';
 
 @inject('ScreenStore')
@@ -55,7 +55,7 @@ class ItemUser extends Component {
                 <td className="text-center">{data.name}</td>
                 <td className="text-center">{data.phone}</td>
                 <td className="text-center">{data.address}</td>
-                <td className="text-center"><Button color="secondary" onClick={this.handleEditItem}>Edit</Button> {' '} <Button color="danger" onClick={this.handleDeleteItem}>Delete</Button></td>
+                <td><Button color="primary" onClick={this.handleEditItem}>Edit</Button> {' '} <Button color="secondary">Delete</Button></td>
             </tr>
         );
     }

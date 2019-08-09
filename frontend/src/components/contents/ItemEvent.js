@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import '../css/ItemEvent.css';
 import Moment from 'react-moment';
-import { Button } from 'reactstrap';
+import Button from '@material-ui/core/Button';
 import { Redirect } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
 
@@ -34,7 +34,7 @@ class ItemEvent extends Component {
                 <td className="text-center">{eventData.auidd}</td>
                 <td >{eventData.ename}</td>
                 <td className="text-center"><Moment format="DD/MM/YYYY HH:mm">{startDate}</Moment> - <Moment format="DD/MM/YYYY HH:mm">{endDate}</Moment></td>
-                <td className="text-center"><Button color="secondary" onClick={this.handleEditItem}>Edit</Button> {' '} <Button color="danger">Delete</Button></td>
+                <td><Button color="primary" onClick={this.handleEditItem}>Edit</Button> {' '} <Button color="secondary">Delete</Button></td>
             </tr>
         );
     }

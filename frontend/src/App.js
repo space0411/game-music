@@ -14,9 +14,6 @@ import { Mail, Dashboard, AccountCircle, RestaurantMenu, Menu, ExpandMore, Fiber
 
 import LoginScreen from './components/LoginScreen';
 import DashboardScreen from './components/DashboardScreen';
-import CreateEventScreen from './components/events/CreateEventScreen';
-import AllEventScreen from './components/events/AllEventScreen';
-import TypeEventScreen from './components/events/TypeEventScreen';
 import UserScreen from './components/UserScreen';
 import CreateUserScreen from './components/CreateUserScreen';
 import ProductsScreen from './components/ProductsScreen';
@@ -174,10 +171,6 @@ class App extends Component {
                   <Route path="/login" component={LoginScreen} />
                   <Route path="/dashboard" component={DashboardScreen} />
                   <Route path="/user" component={UserScreen} />
-                  <Route path="/create-event" component={CreateEventScreen} />
-                  <Route path="/all-event" component={AllEventScreen} />
-                  <Route path="/type-event" component={TypeEventScreen} />
-                  <Route path="/edit-event" component={CreateEventScreen} />
                   <Route path="/new-user" component={CreateUserScreen} />
                   <Route path="/product" component={ProductsScreen} />
                   <Route path="/new-product" component={CreateProductsScreen} />

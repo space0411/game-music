@@ -141,11 +141,8 @@ class CreateProductsScreen extends React.Component {
 
     uploadImage = (productid) => {
         var data = new FormData()
-        // for (const item of this.files) {
-        //     data.append(`image`, item.file, item.name)
-        // }
-        this.files.forEach((item, index) => {
-            data.append(`image${index}`, item.file, item.name)
+        this.files.forEach(item => {
+            data.append('image', item.file)
         })
         fetch(`${this.props.SessionStore.API_URL}product/image?id=${productid}&size=${this.files.length}`, {
             method: 'POST',

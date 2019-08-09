@@ -2,14 +2,16 @@ import React, { Component } from 'react';
 import './css/LoginScreen.css';
 import { observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
-import { Button, Form, FormGroup, Label, Input } from 'reactstrap';
+import { Button, TextField } from '@material-ui/core';
 import { Redirect } from 'react-router-dom';
+import { withStyles } from '@material-ui/core/styles';
+import PropTypes from 'prop-types';
 
 @inject('SessionStore')
 @observer
 class LoginScreen extends Component {
-    @observable userName = ''
-    @observable password = ''
+    @observable userName = 'ddnhat0411@gmail.com'
+    @observable password = '12345678'
     @observable message
 
     constructor(props) {
@@ -49,25 +51,49 @@ class LoginScreen extends Component {
         if (this.props.SessionStore.isLogin) {
             return <Redirect to='/' />
         }
+        const { classes } = this.props;
         return (
             <div className="Login">
                 <div className="Login-main">
-                    <p className="h1 mb-3">ADMIN</p>
-                    <Form className="Login-main-form" onSubmit={this.handleSubmit}>
-                        <FormGroup>
-                            <Label for="email">Email</Label>
-                            <Input type="email" name="email" placeholder="123abc@gmail.com" value={this.userName || ""} onChange={e => this.userName = e.target.value} />
-                        </FormGroup>
-                        <FormGroup>
-                            <Label for="password">Password</Label>
-                            <Input type="password" name="password" placeholder="***" value={this.password || ""} onChange={e => this.password = e.target.value} />
-                        </FormGroup>                
-                        <Button type="submit">Submit</Button>
-                    </Form>
-                    <p className="mt-2">{this.message}</p>
+                    <h1>ADMIN</h1>
+                    <div className="Login-main-form">
+                        <TextField
+                            required
+                            label="Email"
+                            className={classes.textField}
+                            value={this.userName}
+                            onChange={event => this.userName = event.target.value}
+                            margin="normal" />
+                        <TextField
+                            required
+                            label="Password"
+                            className={classes.textField}
+                            value={this.password}
+                            onChange={event => this.password = event.target.value}
+                            margin="normal" />
+                        <p className={classes.error}>{this.message}</p>
+                        <Button variant="contained" color="primary" onClick={this.handleSubmit}>Login</Button>
+                    </div>
                 </div>
             </div>
         );
     }
 }
-export default LoginScreen
+const styles = theme => ({
+    button: {
+        margin: theme.spacing(1),
+    },
+    textField: {
+        marginLeft: theme.spacing(1),
+        marginRight: theme.spacing(1),
+        width: 300,
+    },
+    error: {
+        marginTop: 10
+    }
+})
+LoginScreen.propTypes = {
+    classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(LoginScreen)
