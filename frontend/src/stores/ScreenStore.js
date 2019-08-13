@@ -5,6 +5,15 @@ class ScreenStore {
     @observable isEditEventStage = false
     @observable editEventData
 
+    // Music Player
+    @observable isOpenMusicPlayer = false
+    @observable musics = []
+
+    @action
+    setDataMusicPlayer(playlist) {
+        this.musics = playlist
+    }
+
     @action
     setTitle(mytitle) {
         this.title = mytitle

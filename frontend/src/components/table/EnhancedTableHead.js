@@ -34,7 +34,15 @@ const rowsDeveloper = [
     { id: 'id', numeric: false, disablePadding: true, label: 'ID' },
     { id: 'name', numeric: false, disablePadding: true, label: 'Name' },
     { id: 'image', numeric: false, disablePadding: true, label: 'Image' },
-    { id: 'url', numeric: false, disablePadding: true, label: 'url' },
+    { id: 'url', numeric: false, disablePadding: true, label: 'Url' },
+    { id: 'options', numeric: true, disablePadding: false, label: '' },
+];
+
+const rowsMusic = [
+    { id: 'id', numeric: false, disablePadding: true, label: 'ID' },
+    { id: 'name', numeric: false, disablePadding: true, label: 'Name' },
+    { id: 'type', numeric: false, disablePadding: true, label: 'Type' },
+    { id: 'url', numeric: false, disablePadding: true, label: 'Url' },
     { id: 'options', numeric: true, disablePadding: false, label: '' },
 ];
 
@@ -56,6 +64,8 @@ export default class EnhancedTableHead extends React.Component {
             case HeadStyle.Game: this.rows = [...rowsGame]
                 break
             case HeadStyle.Developer: this.rows = [...rowsDeveloper]
+                break
+            case HeadStyle.Music: this.rows = [...rowsMusic]
                 break
             default: break
         }

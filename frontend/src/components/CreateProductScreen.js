@@ -18,7 +18,8 @@ import AlertDialog from './dialog/AlertDialog';
 import CKEditor from 'ckeditor4-react';
 import CreateCategories from './CreateCategories';
 import Moment from 'moment';
-import MusicDialog from './MusicDialog';
+import MusicDialog from './dialog/MusicDialog';
+import MusicManagerDialog from './dialog/MusicManagerDialog';
 
 
 @inject('ScreenStore', 'SessionStore')
@@ -43,6 +44,7 @@ class CreateProductsScreen extends React.Component {
     @observable openAlert = false
     @observable openRemoveImageAlert = false
     @observable openAlertFlatformGenre = false
+    @observable openUploadMusic = false
     @observable openMusic = false
     @observable selectedImage
 
@@ -154,14 +156,19 @@ class CreateProductsScreen extends React.Component {
             return result.json();
         }).then((jsonResult) => {
             console.log(jsonResult);
-            this.alert = {
+            const alert = {
                 title: 'Notify',
                 content: jsonResult.message
             }
-            this.openAlert = true
+            this.openAlertDialog(alert)
         }).catch((error) => {
             console.error(error);
         });
+    }
+
+    openAlertDialog = (alert) => {
+        this.alert = alert
+        this.openAlert = true
     }
 
     handleChange = event => {
@@ -195,6 +202,7 @@ class CreateProductsScreen extends React.Component {
     handleClose = () => {
         this.openAlert = false
         this.openRemoveImageAlert = false
+        this.openUploadMusic = false
         this.openMusic = false
     };
 
@@ -250,10 +258,12 @@ class CreateProductsScreen extends React.Component {
         console.log(this.selectedImage)
     }
 
+    handleOpenUploadMusicDialog = () => {
+        this.openUploadMusic = true
+    }
     handleOpenMusicDialog = () => {
         this.openMusic = true
     }
-
     render() {
         const { classes } = this.props;
         return (
@@ -265,8 +275,14 @@ class CreateProductsScreen extends React.Component {
                     isChangeAll={this.handleChangeAll}
                     handleClose={this.handleCloseCreateFlatformGenre} />
                 <MusicDialog
+                    open={this.openUploadMusic}
+                    handleClose={this.handleClose}
+                    openAlertDialog={this.openAlertDialog}
+                    productData={this.productData} />
+                <MusicManagerDialog
                     open={this.openMusic}
-                    handleClose={this.handleClose} />
+                    handleClose={this.handleClose}
+                    openAlertDialog={this.openAlertDialog} />
                 <AlertDialog
                     open={this.openAlert}
                     handleOke={this.handleClose}
@@ -281,6 +297,9 @@ class CreateProductsScreen extends React.Component {
                 <h5>Product information</h5>
                 <Button variant="contained" className={classes.button} onClick={this.handleRefeshCateClick} color="primary">Refesh Categories</Button>
                 <Button variant="contained" className={classes.button} onClick={this.handleNewFlatformGenre} color="primary">New Flatform & Genre</Button>
+                <Button variant="contained" className={classes.button} onClick={this.handleOpenUploadMusicDialog} color="secondary">
+                    Upload Music<QueueMusic className={classes.rightIcon} />
+                </Button>
                 <Button variant="contained" className={classes.button} onClick={this.handleOpenMusicDialog} color="secondary">
                     Music<QueueMusic className={classes.rightIcon} />
                 </Button>
@@ -355,17 +374,6 @@ class CreateProductsScreen extends React.Component {
                         }}
                     />
                 </MuiPickersUtilsProvider>
-                <h5>Short Detail</h5>
-                <CKEditor
-                    data={this.shortDetail}
-                    type="classic"
-                    onChange={this.onEditorShortChange} />
-                <br></br>
-                <h5>Full Detail</h5>
-                <CKEditor
-                    data={this.fullDetail}
-                    type="classic"
-                    onChange={this.onEditorFullChange} />
                 <input
                     accept="image/*"
                     className={classes.input}
@@ -374,12 +382,12 @@ class CreateProductsScreen extends React.Component {
                     type="file"
                     onChange={this.handleFileChange}
                 />
+                <br></br>
                 <label htmlFor="contained-button-file">
                     <Button variant="contained" component="span" className={classes.button}>
                         Select image
                     </Button>
                 </label>
-                <br></br>
                 {this.isEditProductMode &&
                     <div>Live image:
                     <div style={{ display: 'flex' }}>
@@ -412,6 +420,18 @@ class CreateProductsScreen extends React.Component {
                         </ListItem>
                     ))}
                 </List>
+                <br></br>
+                <h5>Short Detail</h5>
+                <CKEditor
+                    data={this.shortDetail}
+                    type="classic"
+                    onChange={this.onEditorShortChange} />
+                <br></br>
+                <h5>Full Detail</h5>
+                <CKEditor
+                    data={this.fullDetail}
+                    type="classic"
+                    onChange={this.onEditorFullChange} />
                 <br></br>
                 <Button
                     variant="contained"

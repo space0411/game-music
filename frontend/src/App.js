@@ -22,6 +22,7 @@ import FlatformScreen from './components/FlatformScreen';
 import GenreScreen from './components/GenreScreen';
 import GameScreen from './components/GameScreen';
 import DeveloperScreen from './components/DeveloperScreen';
+import MusicPlayerDialog from './components/dialog/MusicPlayerDialog';
 
 const drawerWidth = 300;
 
@@ -89,14 +90,14 @@ class App extends Component {
               <ExpansionPanelSummary expandIcon={item.content.length > 0 ? <ExpandMore /> : null}>
                 {/* <Link to={item.title} className='d-flex ml-1 row w-100'> */}
                 {/* <Typography component={'span'} className={classes.heading}> */}
-                  <ListItemIcon>
-                    {
-                      index === 0 ? <Dashboard className={classes.icon} /> :
-                        index === 1 ? <AccountCircle className={classes.icon} /> :
-                          index === 2 ? <RestaurantMenu className={classes.icon} /> :
-                            index === 3 ? <FiberNew className={classes.icon} /> : <Mail  className={classes.icon} />
-                    }
-                  </ListItemIcon>
+                <ListItemIcon>
+                  {
+                    index === 0 ? <Dashboard className={classes.icon} /> :
+                      index === 1 ? <AccountCircle className={classes.icon} /> :
+                        index === 2 ? <RestaurantMenu className={classes.icon} /> :
+                          index === 3 ? <FiberNew className={classes.icon} /> : <Mail className={classes.icon} />
+                  }
+                </ListItemIcon>
                 {/* </Typography> */}
                 <Typography component={'span'} className={classes.secondaryHeading}>{item.title}</Typography>
                 {/* </Link> */}
@@ -182,6 +183,7 @@ class App extends Component {
                 </Switch>
               </main>
             </div>
+            <MusicPlayerDialog />
           </div> :
           <LoginScreen />
         }

@@ -9,10 +9,10 @@ import CloseIcon from '@material-ui/icons/Close';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
 
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import { observable } from 'mobx';
 import UploadMusicDialog from './UploadMusicDialog';
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable, resetServerContext } from "react-beautiful-dnd";
 
 const useStyles = theme => ({
   appBar: {
@@ -27,7 +27,7 @@ const useStyles = theme => ({
     width: 300,
   },
   item: {
-    
+
   }
 });
 
@@ -43,7 +43,7 @@ const reorder = (list, startIndex, endIndex) => {
   return result;
 };
 
-const grid = 8;
+// const grid = 8;
 
 const getItemStyle = (isDragging, draggableStyle) => ({
   userSelect: "none",
@@ -58,9 +58,10 @@ const getItemStyle = (isDragging, draggableStyle) => ({
 });
 
 const getListStyle = isDraggingOver => ({
-  background: isDraggingOver ? "lightblue" : "lightgrey",
+  background: isDraggingOver ? "lightblue" : "white",
 });
 
+@inject('SessionStore')
 @observer
 class MusicDialog extends React.Component {
   @observable musics = []
@@ -82,6 +83,7 @@ class MusicDialog extends React.Component {
 
   handleTitleChange = (event, myindex) => {
     this.musics = this.musics.map((value, index) => index === myindex ? Object.assign(value, { title: event.target.value }) : value)
+    resetServerContext()
   }
 
   onDragEnd = (result) => {
@@ -96,6 +98,41 @@ class MusicDialog extends React.Component {
       result.destination.index
     )
     this.musics = items
+    console.log(this.musics)
+  }
+
+  handleUploadMusic = () => {
+    const { openAlertDialog, productData } = this.props
+    console.log('handleUploadMusic', this.musics.length, productData)
+    if (productData.id && this.musics.length > 0) {
+      var data = new FormData()
+      var musicData = []
+      this.musics.forEach(file => {
+        data.append('file', file)
+        musicData.push({ name: file.title })
+      })
+      console.log(musicData)
+      if (musicData.length > 0)
+        fetch(`${this.props.SessionStore.API_URL}music/create?productId=${productData.id}&musics=${JSON.stringify(musicData)}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+          },
+          body: data
+        }).then((result) => {
+          return result.json();
+        }).then((jsonResult) => {
+          console.log(jsonResult);
+          if (openAlertDialog) {
+            openAlertDialog({
+              title: 'Notify',
+              content: jsonResult.message
+            })
+          }
+        }).catch((error) => {
+          console.error(error);
+        });
+    }
   }
 
   render() {
@@ -110,21 +147,18 @@ class MusicDialog extends React.Component {
                 <CloseIcon />
               </IconButton>
               <Typography variant="h6" className={classes.title}>
-                Sound
+                Upload Music
               </Typography>
-              <Button edge="start" color="inherit" onClick={this.handleOpenUpload} aria-label="upload music">
-                Select Music <NoteAddIcon />
+              <Button variant="contained" color="secondary" onClick={this.handleOpenUpload} aria-label="Select music">
+                <NoteAddIcon />Select Music
               </Button>
-              <Button edge="start" color="inherit" onClick={this.handleOpenUpload} aria-label="upload music">
-                Upload to server <CloudUploadIcon />
-              </Button>
-              <Button color="inherit" onClick={handleClose}>
-                save
+              <Button style={{ marginLeft: 8 }} variant="contained" color="secondary" onClick={this.handleUploadMusic} aria-label="Upload music">
+                <CloudUploadIcon />Upload to server
               </Button>
             </Toolbar>
           </AppBar>
           <List>
-            <DragDropContext onDragEnd={this.onDragEnd}>
+            <DragDropContext constantProp={this.musics} onDragEnd={this.onDragEnd}>
               <Droppable droppableId="droppable">
                 {(provided, snapshot) => (
                   <div
