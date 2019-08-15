@@ -64,6 +64,7 @@ const styles = theme => ({
 @inject('ScreenStore', 'SessionStore')
 @observer
 class GenreScreen extends React.Component {
+    screenName = 'Genre'
     @observable data = []
     @observable openAlert = false
     @observable openEditAlert = false
@@ -80,7 +81,7 @@ class GenreScreen extends React.Component {
 
     constructor(props) {
         super(props);
-        this.props.ScreenStore.setTitle('Genre')
+        this.props.ScreenStore.setTitle(this.screenName)
     }
 
     state = {
@@ -191,7 +192,7 @@ class GenreScreen extends React.Component {
             <Paper className={classes.root}>
                 <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
                 <EditDialog handleClose={this.handleEditAlertClose} handleAgree={this.handleAgreeEdit} data={this.alertEdit} open={this.openEditAlert} />
-                <EnhancedTableToolbar numSelected={selected.length} />
+                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName}/>
                 <div className={classes.tableWrapper}>
                     <Table className={classes.table} aria-labelledby="tableTitle">
                         <EnhancedTableHead

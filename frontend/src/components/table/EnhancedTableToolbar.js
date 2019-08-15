@@ -37,7 +37,7 @@ const toolbarStyles = theme => ({
 
 class EnhancedTableToolbar extends React.Component {
     render() {
-        const { numSelected, classes } = this.props;
+        const { numSelected, classes, toolbarName } = this.props;
         return (
             <Toolbar
                 className={classNames(classes.root, {
@@ -51,7 +51,7 @@ class EnhancedTableToolbar extends React.Component {
                         </Typography>
                     ) : (
                             <Typography variant="h6" id="tableTitle">
-                                List of
+                                {toolbarName}
                             </Typography>
                         )}
                 </div>

@@ -44,14 +44,13 @@ class AlertDialog extends React.Component {
     }
 }
 
-const styles = {
+const useStyles = theme => ({
     
-};
+});
 
 AlertDialog.propTypes = {
     classes: PropTypes.object.isRequired,
     onClose: PropTypes.func,
-    selectedValue: PropTypes.string,
 };
 
-export default withStyles(styles)(AlertDialog);
+export default withStyles(useStyles)(AlertDialog);

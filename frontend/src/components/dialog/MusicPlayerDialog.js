@@ -4,7 +4,7 @@ import { observable } from 'mobx'
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import { Drawer, List, Divider, IconButton, ListItem, ListItemIcon, ListItemText, Slider, Button } from '@material-ui/core';
+import { Drawer, List, IconButton, ListItem, ListItemIcon, ListItemText, Slider, Button } from '@material-ui/core';
 
 import ArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import ArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
@@ -22,13 +22,13 @@ function PlayIcon(props) {
     );
 }
 
-function PauseIcon(props) {
-    return (
-        <SvgIcon {...props}>
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
-        </SvgIcon>
-    );
-}
+// function PauseIcon(props) {
+//     return (
+//         <SvgIcon {...props}>
+//             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+//         </SvgIcon>
+//     );
+// }
 
 function NextIcon(props) {
     return (
@@ -68,11 +68,19 @@ function VolumeIcon(props) {
     );
 }
 
-@inject('ScreenStore')
+@inject('ScreenStore', 'SessionStore')
 @observer
 class MusicPlayerDialog extends React.Component {
+    audioPlayer
     @observable currentSlider = 0
     @observable openQueueMusic = false
+    @observable currentMusic
+
+    componentDidMount() {
+        this.audioPlayer = document.getElementById('audioPlayer');
+        // console.log(this.audioPlayer)
+        // this.audioPlayer.play()
+    }
 
     handleDrawerClose = () => {
         this.openQueueMusic = !this.openQueueMusic
@@ -82,27 +90,45 @@ class MusicPlayerDialog extends React.Component {
         this.currentSlider = newValue
     };
 
+    handleMusicItemClick = (item) => {
+        this.currentMusic = item
+    }
+
     render() {
+        const currentMusic = this.currentMusic
         const openQueueMusic = this.openQueueMusic
-        const open = false
+        const { isOpenMusicPlayer, musics } = this.props.ScreenStore
+        const { getMusic } = this.props.SessionStore
         const { classes } = this.props
+        let musicUrl = ''
+        let musicName = ''
+        if (currentMusic) {
+            musicUrl = getMusic(currentMusic.url)
+            musicName = currentMusic.name
+        }
         return (
             <div>
-                {this.QueueMusicPlaylist(classes, openQueueMusic)}
+                <audio
+                    id='audioPlayer'
+                    src={musicUrl}>
+                    Your browser does not support the
+                    <code>audio</code> element.
+                </audio>
+                {this.QueueMusicPlaylist(classes, openQueueMusic, musics)}
                 <Drawer
                     anchor="bottom"
                     variant="permanent"
                     className={clsx(classes.drawer, {
-                        [classes.drawerOpen]: open,
-                        [classes.drawerClose]: !open,
+                        [classes.drawerOpen]: isOpenMusicPlayer,
+                        [classes.drawerClose]: !isOpenMusicPlayer,
                     })}
                     classes={{
                         paper: clsx({
-                            [classes.drawerOpen]: open,
-                            [classes.drawerClose]: !open,
+                            [classes.drawerOpen]: isOpenMusicPlayer,
+                            [classes.drawerClose]: !isOpenMusicPlayer,
                         }),
                     }}
-                    open={open}
+                    open={isOpenMusicPlayer}
                 >
                     <div className={classes.toolbar}>
                         <PrevIcon className={classes.nextPrevButton} style={{ fontSize: 32 }} />
@@ -110,20 +136,23 @@ class MusicPlayerDialog extends React.Component {
                         <NextIcon className={classes.nextPrevButton} style={{ fontSize: 32 }} />
                         <ShuffleIcon className={classes.nextPrevButton} />
                         <LoopIcon className={classes.nextPrevButton} />
-                        {this.Music()}
+                        {this.Music(musicName)}
                         <VolumeIcon className={classes.nextPrevButton} />
                         <div style={{ width: 2, height: '70%', backgroundColor: 'gray' }} />
                         <Button onClick={this.handleDrawerClose} variant="contained" color="secondary" className={classes.button}>
                             <QueueMusic className={classes.rightIcon} />
-                            Queue music (0)
-                    </Button>
+                            Queue music ({musics.length})
+                        </Button>
+                        <IconButton onClick={this.handleDrawerClose}>
+                            {isOpenMusicPlayer ? <ArrowDownIcon /> : <ArrowUpIcon />}
+                        </IconButton>
                     </div>
                 </Drawer>
             </div>
         );
     }
 
-    Music = (data) => {
+    Music = (name) => {
         return (
             <div style={{ display: 'flex', marginLeft: '5%', marginRight: '5%' }}>
                 <div style={{
@@ -142,7 +171,7 @@ class MusicPlayerDialog extends React.Component {
                             textOverflow: 'ellipsis',
                             overflow: 'hidden',
                             whiteSpace: 'nowrap'
-                        }}>Không Yêu Đừng Gây Thương Nhớ (Single)</div>
+                        }}>{name}</div>
                         <div>00:01/04:10</div>
                     </div>
                     <Slider
@@ -155,7 +184,7 @@ class MusicPlayerDialog extends React.Component {
         )
     }
 
-    QueueMusicPlaylist = (classes, open) => {
+    QueueMusicPlaylist = (classes, open, musics) => {
         return (
             <Drawer
                 anchor="bottom"
@@ -173,21 +202,29 @@ class MusicPlayerDialog extends React.Component {
                 open={open}
             >
                 <div className={classes.toolbarQueue}>
-                    <div style={{ display: 'flex', flexDirection: 'column', width: '65%', backgroundColor: '#fff' }}>
+                    <div className={classes.playlist}>
                         <div style={{ marginTop: 16, marginRight: 16, display: 'flex', justifyContent: 'flex-end' }}>
                             <IconButton onClick={this.handleDrawerClose}>
                                 {open ? <ArrowDownIcon /> : <ArrowUpIcon />}
                             </IconButton>
                         </div>
-                        <div style={{ marginTop: 5, marginLeft: 16, fontSize: 18, fontWeight: 'bold', color: 'black' }}>Queue Music</div>
-                        <div style={{}}>
+                        <div style={{ marginTop: 5, marginLeft: 16, color: 'gray' }}>PLAYLIST ({musics.length})</div>
+                        <div>
                             <List>
-                                {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-                                    <ListItem button key={text}>
-                                        <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                                        <ListItemText primary={text} />
-                                    </ListItem>
-                                ))}
+                                {musics.map((item, index) => {
+                                    const bg = {
+                                        padding: '10px 20px',
+                                        backgroundColor: index % 2 === 0 && 'rgba(72,72,72,0.1)',
+                                    }
+                                    return (
+                                        <ListItem onClick={() => this.handleMusicItemClick(item)} className={classes.item} style={bg} button key={index}>
+                                            <div style={{ display: 'flex' }}>
+                                                <div>{index + 1}</div>
+                                                <div style={{ marginLeft: 10 }}>{item.name}</div>
+                                            </div>
+                                        </ListItem>
+                                    )
+                                })}
                             </List>
                         </div>
                     </div>
@@ -232,9 +269,13 @@ const useStyles = theme => ({
         }),
         overflowX: 'hidden',
         overflowY: 'hidden',
-        height: theme.spacing(7) + 1,
+        // height: theme.spacing(7) + 1,
+        // [theme.breakpoints.up('sm')]: {
+        //     height: theme.spacing(8) + 1,
+        // },
+        height: 0,
         [theme.breakpoints.up('sm')]: {
-            height: theme.spacing(8) + 1,
+            height: 0,
         },
     },
     toolbar: {
@@ -267,6 +308,19 @@ const useStyles = theme => ({
             color: purple[400],
         },
     },
+    playlist: {
+        display: 'flex',
+        flexDirection: 'column',
+        width: '65%',
+        backgroundColor: '#0c0e12',
+        color: 'white'
+    },
+    item: {
+        '&:hover': {
+            color: purple[400],
+            backgroundColor: 'rgba(239,239,239,0.1) !important'
+        },
+    }
 });
 
 MusicPlayerDialog.propTypes = {

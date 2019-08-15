@@ -11,7 +11,7 @@ import {
     MuiPickersUtilsProvider,
     KeyboardDatePicker,
 } from '@material-ui/pickers';
-import { Clear, Delete, QueueMusic } from '@material-ui/icons';
+import { Clear, Delete, QueueMusic, Refresh } from '@material-ui/icons';
 import { observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import AlertDialog from './dialog/AlertDialog';
@@ -266,6 +266,7 @@ class CreateProductsScreen extends React.Component {
     }
     render() {
         const { classes } = this.props;
+        const { getProductImage } = this.props.SessionStore
         return (
             <div>
                 <CreateCategories
@@ -295,7 +296,6 @@ class CreateProductsScreen extends React.Component {
                     handleClose={this.handleClose}
                     data={this.alertRemoveImage} />
                 <h5>Product information</h5>
-                <Button variant="contained" className={classes.button} onClick={this.handleRefeshCateClick} color="primary">Refesh Categories</Button>
                 <Button variant="contained" className={classes.button} onClick={this.handleNewFlatformGenre} color="primary">New Flatform & Genre</Button>
                 <Button variant="contained" className={classes.button} onClick={this.handleOpenUploadMusicDialog} color="secondary">
                     Upload Music<QueueMusic className={classes.rightIcon} />
@@ -323,7 +323,8 @@ class CreateProductsScreen extends React.Component {
                     </Select>
                     <FormHelperText>Select a main category</FormHelperText>
                 </FormControl>
-                {this.isEditProductMode && <div>Selected:<h6>{this.prevCate}</h6></div>}
+                <IconButton variant="contained" className={classes.button} onClick={this.handleRefeshCateClick} color="primary"><Refresh className={classes.rightIcon} /></IconButton>
+                {this.isEditProductMode && <div style={{ marginLeft: 6 }}>Selected:<h6>{this.prevCate}</h6></div>}
                 <br></br>
                 <FormControlLabel
                     control={
@@ -337,6 +338,7 @@ class CreateProductsScreen extends React.Component {
                         />
                     }
                     label="Publish"
+                    style={{ marginLeft: 1 }}
                 />
                 <br></br>
                 <TextField
@@ -394,7 +396,7 @@ class CreateProductsScreen extends React.Component {
                             {this.filesLive.map((item, index) => (
                                 <div key={index} style={{ textAlign: 'center' }}>
                                     <div style={{
-                                        backgroundImage: `url(http://localhost:1338/image?name=product/${item.url})`,
+                                        backgroundImage: `url(${getProductImage(item.url)})`,
                                         width: 200,
                                         height: 200,
                                         backgroundRepeat: 'no-repeat',

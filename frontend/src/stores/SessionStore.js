@@ -1,7 +1,10 @@
-import { observable, action } from 'mobx'
+import { observable, action } from 'mobx';
+
+const BASE_URL = 'http://localhost:1338/'
+const BASE_API_URL = 'http://localhost:1338/api/v1/'
 
 class SessionsStore {
-    @observable API_URL = 'http://localhost:1338/api/v1/'
+    @observable API_URL = BASE_API_URL
     @observable isLogin = false
     @observable userInfo = null
     @observable userToken = null
@@ -9,6 +12,16 @@ class SessionsStore {
     @action
     setLoginComplete(b) {
         this.isLogin = b
+    }
+
+    @action
+    getProductImage(url) {
+        return `${BASE_URL}image?name=product/${url}`
+    }
+
+    @action
+    getMusic(url) {
+        return `${BASE_URL}music?url=${url}`
     }
 
     @action

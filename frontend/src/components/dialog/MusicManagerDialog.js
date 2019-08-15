@@ -1,20 +1,17 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  Button, Dialog, ListItemText, ListItem, List,
-  Divider, AppBar, Toolbar, IconButton, Typography,
-  Slide, TextField
+  Dialog, AppBar, Toolbar, IconButton, Typography,
+  Slide, Button
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import NoteAddIcon from '@material-ui/icons/NoteAdd';
-
+import PlayIcon from '@material-ui/icons/PlayCircleFilled';
 import { observer, inject } from 'mobx-react';
 import { observable } from 'mobx';
 import UploadMusicDialog from './UploadMusicDialog';
 import { DragDropContext, Droppable, Draggable, resetServerContext } from "react-beautiful-dnd";
 
-import PropTypes from 'prop-types';
 import {
   Table, TableBody, TableCell, TablePagination, TableRow,
   Paper, Checkbox
@@ -77,6 +74,9 @@ const useStyles = theme => ({
   button: {
     margin: theme.spacing(1),
   },
+  icon: {
+    marginLeft: theme.spacing(1),
+  },
   input: {
     display: 'none',
   },
@@ -109,12 +109,14 @@ const getItemStyle = (isDragging, draggableStyle) => ({
 });
 
 const getListStyle = isDraggingOver => ({
-  background: isDraggingOver ? "lightblue" : "white",
+  background: isDraggingOver ? "white" : "white",
 });
 
 @inject('SessionStore', 'ScreenStore')
 @observer
 class MusicManagerDialog extends React.Component {
+  screenName = 'Music'
+  @observable productData
   @observable data = []
   @observable openUploadFile = false
   @observable openAlert = false
@@ -130,7 +132,7 @@ class MusicManagerDialog extends React.Component {
   }
   state = {
     order: 'desc',
-    orderBy: 'id',
+    orderBy: '',
     selected: [],
     page: 0,
     rowsPerPage: 10,
@@ -210,6 +212,7 @@ class MusicManagerDialog extends React.Component {
     console.log(productData)
     if (!productData)
       return
+    this.productData = productData
     fetch(`${this.props.SessionStore.API_URL}music/read`, {
       method: 'POST',
       headers: {
@@ -312,13 +315,94 @@ class MusicManagerDialog extends React.Component {
 
   handleAgreeDelete = () => {
     this.openAlert = false
-    this.deleteFlatform(this.productId)
+    this.deleteMusic(this.productId)
   }
 
   handleAgreeEdit = (name, id) => {
     console.log(name, id)
     this.openEditAlert = false
-    this.editFlatform(name, id)
+    this.editMusic(name, id)
+  }
+
+  handlePlayMusic = () => {
+    if (this.data.length > 0) {
+      const store = this.props.ScreenStore
+      store.setDataMusicPlayer(this.data)
+      store.setOpenMusicPlayer(true)
+      this.props.handleClose()
+    }
+  }
+
+  handleUpdateIndex = () => {
+    const { openAlertDialog } = this.props
+    if (this.data.length > 0)
+      fetch(`${this.props.SessionStore.API_URL}music/updateindex`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+        },
+        body: JSON.stringify({
+          musics: this.data
+        })
+      }).then((result) => {
+        return result.json();
+      }).then((jsonResult) => {
+        console.log(jsonResult);
+        if (openAlertDialog) {
+          openAlertDialog({
+            title: jsonResult.success,
+            content: jsonResult.message
+          })
+        }
+      }).catch((error) => {
+        console.error(error);
+      });
+  }
+
+  editMusic(name, id) {
+    fetch(`${this.props.SessionStore.API_URL}music/update`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+      },
+      body: JSON.stringify({
+        id: id,
+        name: name
+      })
+    }).then((result) => {
+      return result.json();
+    }).then((jsonResult) => {
+      console.log(jsonResult);
+      if (jsonResult.success) {
+        this.data = this.data.map(value => value.id === id ? jsonResult.data : value)
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
+
+  deleteMusic(productId) {
+    fetch(`${this.props.SessionStore.API_URL}music/delete`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+      },
+      body: JSON.stringify({
+        id: productId
+      })
+    }).then((result) => {
+      return result.json();
+    }).then((jsonResult) => {
+      console.log(jsonResult);
+      if (jsonResult.success) {
+        this.data = this.data.filter(item => item.id !== productId)
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
   }
 
   render() {
@@ -338,67 +422,19 @@ class MusicManagerDialog extends React.Component {
               <Typography variant="h6" className={classes.title}>
                 Music
               </Typography>
-              {/* <Button variant="contained" color="secondary" onClick={this.handleOpenUpload} aria-label="Select music">
-                <NoteAddIcon />Select Music
+              <Button variant="contained" className={classes.button} onClick={this.handleUpdateIndex} color="secondary">
+                Update Index<CloudUploadIcon className={classes.icon} />
               </Button>
-              <Button style={{ marginLeft: 8 }} variant="contained" color="secondary" onClick={this.handleUploadMusic} aria-label="Upload music">
-                <CloudUploadIcon />Upload to server
-              </Button> */}
+              <Button variant="contained" className={classes.button} onClick={this.handlePlayMusic} color="secondary">
+                Play music<PlayIcon className={classes.icon} />
+              </Button>
             </Toolbar>
           </AppBar>
-          {/* <List>
-            <DragDropContext constantProp={this.data} onDragEnd={this.onDragEnd}>
-              <Droppable droppableId="droppable">
-                {(provided, snapshot) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    style={getListStyle(snapshot.isDraggingOver)}
-                  >
-                    {this.data.map((item, index) => {
-                      return (
-                        <Draggable key={item.id} draggableId={item.id} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              style={getItemStyle(
-                                snapshot.isDragging,
-                                provided.draggableProps.style
-                              )}
-                            >
-                              <div>
-                                <ListItem button>
-                                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <TextField
-                                      required
-                                      label="Music Name"
-                                      className={classes.textField}
-                                      value={item.name || ''}
-                                      onChange={event => this.handleTitleChange(event, index)}
-                                      margin="normal" />
-                                    <ListItemText primary={item.url} secondary={`Size: ${item.size}`} />
-                                  </div>
-                                </ListItem>
-                                <Divider />
-                              </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      )
-                    })}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
-          </List> */}
           <div style={{ padding: 24 }}>
             <Paper className={classes.root}>
               <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
               <EditDialog handleClose={this.handleEditAlertClose} handleAgree={this.handleAgreeEdit} data={this.alertEdit} open={this.openEditAlert} />
-              <EnhancedTableToolbar numSelected={selected.length} />
+              <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} />
               <div className={classes.tableWrapper}>
                 <Table className={classes.table} aria-labelledby="tableTitle">
                   <EnhancedTableHead
@@ -410,47 +446,69 @@ class MusicManagerDialog extends React.Component {
                     onRequestSort={this.handleRequestSort}
                     rowCount={data.length}
                   />
-                  <TableBody>
-                    {stableSort(data, getSorting(order, orderBy))
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map(n => {
-                        const isSelected = this.isSelected(n.id);
-                        return (
-                          <TableRow
-                            hover
-                            // onClick={event => this.handleClick(event, n.id)}
-                            role="checkbox"
-                            aria-checked={isSelected}
-                            tabIndex={-1}
-                            key={n.id}
-                            selected={isSelected}
-                          >
-                            <TableCell padding="checkbox">
-                              <Checkbox onChange={() => this.handleClick(undefined, n.id)} checked={isSelected} />
-                            </TableCell>
-                            <TableCell component="th" scope="row" padding="none">{n.id}</TableCell>
-                            <TableCell component="th" scope="row" padding="none">{n.name}</TableCell>
-                            <TableCell component="th" scope="row" padding="none">{n.type}</TableCell>
-                            <TableCell component="th" scope="row" padding="none">{n.url}</TableCell>
-                            <TableCell align="right">
-                              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
-                                <IconButton onClick={() => this.handleEditClick(n)} color="primary" className={classes.button} aria-label="Edit">
-                                  <Edit />
-                                </IconButton>
-                                <IconButton onClick={() => this.handleDeleteClick(n)} color="secondary" className={classes.button} aria-label="Delete">
-                                  <Delete />
-                                </IconButton>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    {emptyRows > 0 && (
-                      <TableRow style={{ height: 49 * emptyRows }}>
-                        <TableCell colSpan={6} />
-                      </TableRow>
-                    )}
-                  </TableBody>
+                  <DragDropContext constantProp={this.data} onDragEnd={this.onDragEnd}>
+                    <Droppable droppableId="droppable">
+                      {(provided, snapshot) => (
+                        <TableBody
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          style={getListStyle(snapshot.isDraggingOver)}
+                        >
+                          {stableSort(data, getSorting(order, orderBy))
+                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                            .map((n, index) => {
+                              const isSelected = this.isSelected(n.id);
+                              return (
+                                <Draggable key={n.id} draggableId={n.id} index={index}>
+                                  {(provided, snapshot) => (
+                                    <TableRow
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      style={getItemStyle(
+                                        snapshot.isDragging,
+                                        provided.draggableProps.style
+                                      )}
+                                      hover
+                                      // onClick={event => this.handleClick(event, n.id)}
+                                      role="checkbox"
+                                      aria-checked={isSelected}
+                                      tabIndex={-1}
+                                      key={n.id}
+                                      selected={isSelected}
+                                    >
+                                      <TableCell padding="checkbox">
+                                        <Checkbox onChange={() => this.handleClick(undefined, n.id)} checked={isSelected} />
+                                      </TableCell>
+                                      <TableCell component="th" scope="row" padding="none">{n.id}</TableCell>
+                                      <TableCell component="th" scope="row" padding="none">{n.name}</TableCell>
+                                      <TableCell component="th" scope="row" padding="none">{n.type}</TableCell>
+                                      <TableCell component="th" scope="row" padding="none">{n.url}</TableCell>
+                                      <TableCell align="right">
+                                        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
+                                          <IconButton onClick={() => this.handleEditClick(n)} color="primary" className={classes.button} aria-label="Edit">
+                                            <Edit />
+                                          </IconButton>
+                                          <IconButton onClick={() => this.handleDeleteClick(n)} color="secondary" className={classes.button} aria-label="Delete">
+                                            <Delete />
+                                          </IconButton>
+                                        </div>
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </Draggable>
+                              );
+                            })}
+                          {emptyRows > 0 && (
+                            <TableRow style={{ height: 49 * emptyRows }}>
+                              <TableCell colSpan={6} />
+                            </TableRow>
+                          )}
+                          {provided.placeholder}
+                        </TableBody>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
                 </Table>
               </div>
               <TablePagination

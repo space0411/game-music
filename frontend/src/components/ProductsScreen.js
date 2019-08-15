@@ -74,6 +74,7 @@ const styles = theme => ({
 @inject('ScreenStore', 'SessionStore')
 @observer
 class ProductsScreen extends React.Component {
+    screenName = 'Products'
     @observable data = []
     @observable openAlert = false
     @observable productId
@@ -84,7 +85,7 @@ class ProductsScreen extends React.Component {
 
     constructor(props) {
         super(props);
-        this.props.ScreenStore.setTitle('Products')
+        this.props.ScreenStore.setTitle(this.screenName)
     }
 
     state = {
@@ -179,7 +180,7 @@ class ProductsScreen extends React.Component {
         return (
             <Paper className={classes.root}>
                 <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
-                <EnhancedTableToolbar numSelected={selected.length} />
+                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} />
                 <div className={classes.tableWrapper}>
                     <Table className={classes.table} aria-labelledby="tableTitle">
                         <EnhancedTableHead
