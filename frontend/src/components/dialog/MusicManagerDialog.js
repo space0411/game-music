@@ -209,7 +209,6 @@ class MusicManagerDialog extends React.Component {
   componentDidMount() {
     const productData = this.props.ScreenStore.editEventData
     const { openAlertDialog } = this.props
-    console.log(productData)
     if (!productData)
       return
     this.productData = productData

@@ -4,12 +4,10 @@ import { observable } from 'mobx'
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import { Drawer, List, IconButton, ListItem, ListItemIcon, ListItemText, Slider, Button } from '@material-ui/core';
+import { Drawer, List, IconButton, ListItem, Slider, Button } from '@material-ui/core';
 
 import ArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import ArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import { purple } from '@material-ui/core/colors';
 import { QueueMusic } from '@material-ui/icons';
@@ -75,11 +73,23 @@ class MusicPlayerDialog extends React.Component {
     @observable currentSlider = 0
     @observable openQueueMusic = false
     @observable currentMusic
+    @observable timeMusic
 
     componentDidMount() {
-        this.audioPlayer = document.getElementById('audioPlayer');
-        // console.log(this.audioPlayer)
-        // this.audioPlayer.play()
+        this.initAudioPlayer()
+    }
+
+    initAudioPlayer() {
+        const audioPlayer = document.getElementById('audioPlayer')
+        this.audioPlayer = audioPlayer
+        // audioPlayer.addEventListener('loadedmetadata', function () {
+        //     // audioPlayer.setAttribute('data-time', audioPlayer.duration);
+        //     console.log(audioPlayer.duration)
+        // }, false)
+        audioPlayer.addEventListener('ended', function () {
+            console.log('end')
+        })
+        
     }
 
     handleDrawerClose = () => {
@@ -87,11 +97,44 @@ class MusicPlayerDialog extends React.Component {
     }
 
     handleSliderChange = (event, newValue) => {
-        this.currentSlider = newValue
+        const rate = Math.floor(newValue / 100 * this.audioPlayer.duration)
+        console.log('rate', rate)
+        this.audioPlayer.currentTime = rate
     };
 
     handleMusicItemClick = (item) => {
         this.currentMusic = item
+    }
+
+    handleAudioTimeUpdate = () => {
+        this.updateTrackTime(this.audioPlayer)
+    }
+
+    updateTrackTime(track) {
+        function formatSecondsAsTime(secs) {
+            var hr = Math.floor(secs / 3600);
+            var min = Math.floor((secs - (hr * 3600)) / 60);
+            var sec = Math.floor(secs - (hr * 3600) - (min * 60));
+
+            if (min < 10) {
+                min = "0" + min;
+            }
+            if (sec < 10) {
+                sec = "0" + sec;
+            }
+
+            return min + ':' + sec;
+        }
+        var currTime = Math.floor(track.currentTime).toString();
+        var duration = Math.floor(track.duration).toString();
+
+        let fDuration = '00:00'
+        let fCurrentTime = formatSecondsAsTime(currTime);
+
+        if (!isNaN(duration))
+            fDuration = formatSecondsAsTime(duration);
+        this.currentSlider = Math.floor(currTime / duration * 100)
+        this.timeMusic = fCurrentTime + ' / ' + fDuration
     }
 
     render() {
@@ -106,11 +149,15 @@ class MusicPlayerDialog extends React.Component {
             musicUrl = getMusic(currentMusic.url)
             musicName = currentMusic.name
         }
+        let time = '00:00 / 00:00'
+        if (this.timeMusic) time = this.timeMusic
         return (
             <div>
                 <audio
                     id='audioPlayer'
-                    src={musicUrl}>
+                    src={musicUrl}
+                    autoPlay
+                    onTimeUpdate={this.handleAudioTimeUpdate}>
                     Your browser does not support the
                     <code>audio</code> element.
                 </audio>
@@ -136,7 +183,7 @@ class MusicPlayerDialog extends React.Component {
                         <NextIcon className={classes.nextPrevButton} style={{ fontSize: 32 }} />
                         <ShuffleIcon className={classes.nextPrevButton} />
                         <LoopIcon className={classes.nextPrevButton} />
-                        {this.Music(musicName)}
+                        {this.Music(musicName, time)}
                         <VolumeIcon className={classes.nextPrevButton} />
                         <div style={{ width: 2, height: '70%', backgroundColor: 'gray' }} />
                         <Button onClick={this.handleDrawerClose} variant="contained" color="secondary" className={classes.button}>
@@ -152,7 +199,7 @@ class MusicPlayerDialog extends React.Component {
         );
     }
 
-    Music = (name) => {
+    Music = (name, time) => {
         return (
             <div style={{ display: 'flex', marginLeft: '5%', marginRight: '5%' }}>
                 <div style={{
@@ -172,7 +219,7 @@ class MusicPlayerDialog extends React.Component {
                             overflow: 'hidden',
                             whiteSpace: 'nowrap'
                         }}>{name}</div>
-                        <div>00:01/04:10</div>
+                        <div>{time}</div>
                     </div>
                     <Slider
                         value={this.currentSlider}
