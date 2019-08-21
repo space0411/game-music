@@ -411,7 +411,7 @@ class CreateProductsScreen extends React.Component {
                         </div>
                     </div>}
                 <br></br>
-                Local image:
+                <h5>Local image:</h5>
                 <List dense className={classes.rootImageList}>
                     {this.files.map((item, index) => (
                         <ListItem key={index} button>

@@ -29,11 +29,11 @@ class AlertDialog extends React.Component {
                         {
                             handleOke ? <Button onClick={handleOke} color="primary" autoFocus>oke</Button> :
                                 <div>
-                                    <Button onClick={handleDisagree} color="primary">
-                                        Disagree
-                                    </Button>
                                     <Button onClick={handleAgree} color="primary" autoFocus>
                                         Agree
+                                    </Button>
+                                    <Button onClick={handleDisagree} color="primary">
+                                        Disagree
                                     </Button>
                                 </div>
                         }
@@ -45,7 +45,7 @@ class AlertDialog extends React.Component {
 }
 
 const useStyles = theme => ({
-    
+
 });
 
 AlertDialog.propTypes = {

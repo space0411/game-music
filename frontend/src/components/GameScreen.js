@@ -180,6 +180,13 @@ class GameScreen extends React.Component {
         this.edit(name, id)
     }
 
+    handleSearch = (searchText) => {
+        if (searchText.length > 3)
+            this.get(searchText)
+        if (searchText.length === 0)
+            this.get()
+    }
+
     render() {
         if (this.props.ScreenStore.isEditEventStage) {
             return <Redirect to='/edit-product' />
@@ -193,7 +200,7 @@ class GameScreen extends React.Component {
             <Paper className={classes.root}>
                 <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
                 <EditDialog handleClose={this.handleEditAlertClose} handleAgree={this.handleAgreeEdit} data={this.alertEdit} open={this.openEditAlert} />
-                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} />
+                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} handleSearch={this.handleSearch} />
                 <div className={classes.tableWrapper}>
                     <Table className={classes.table} aria-labelledby="tableTitle">
                         <EnhancedTableHead
@@ -272,17 +279,21 @@ class GameScreen extends React.Component {
         this.get()
     }
 
-    get() {
+    get(searchText) {
+        const data = {
+            page: this.active,
+            rowsOnPage: 20,
+            searchName: searchText
+        }
+        if (!searchText)
+            delete data.searchName
         fetch(`${this.props.SessionStore.API_URL}game/read`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
             },
-            body: JSON.stringify({
-                page: this.active,
-                rowsOnPage: 20
-            })
+            body: JSON.stringify(data)
         }).then((result) => {
             return result.json();
         }).then((jsonResult) => {

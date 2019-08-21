@@ -10,7 +10,6 @@ import 'typeface-roboto';
 import SessionStore from './stores/SessionStore';
 import ScreenStore from './stores/ScreenStore';
 
-
 const stores = {
     SessionStore,
     ScreenStore

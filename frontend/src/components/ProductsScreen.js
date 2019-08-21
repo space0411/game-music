@@ -168,6 +168,13 @@ class ProductsScreen extends React.Component {
         this.deleteProducts(this.productId)
     }
 
+    handleSearch = (searchText) => {
+        if (searchText.length > 3)
+            this.getProducts(searchText)
+        if (searchText.length === 0)
+            this.getProducts()
+    }
+
     render() {
         if (this.props.ScreenStore.isEditEventStage) {
             return <Redirect to='/edit-product' />
@@ -180,7 +187,7 @@ class ProductsScreen extends React.Component {
         return (
             <Paper className={classes.root}>
                 <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
-                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} />
+                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} handleSearch={this.handleSearch} />
                 <div className={classes.tableWrapper}>
                     <Table className={classes.table} aria-labelledby="tableTitle">
                         <EnhancedTableHead
@@ -264,17 +271,21 @@ class ProductsScreen extends React.Component {
         this.getProducts()
     }
 
-    getProducts() {
+    getProducts(searchText) {
+        const data = {
+            page: this.active,
+            rowsOnPage: 20,
+            searchName: searchText
+        }
+        if (!searchText)
+            delete data.searchName
         fetch(`${this.props.SessionStore.API_URL}product/read`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
             },
-            body: JSON.stringify({
-                page: this.active,
-                rowsOnPage: 20
-            })
+            body: JSON.stringify(data)
         }).then((result) => {
             return result.json();
         }).then((jsonResult) => {

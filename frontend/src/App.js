@@ -8,9 +8,10 @@ import {
   withStyles, AppBar, CssBaseline, Divider, Drawer,
   Hidden, IconButton, List, ListItem, ListItemIcon,
   ListItemText, Toolbar, Typography, ExpansionPanel, ExpansionPanelDetails,
-  ExpansionPanelSummary
+  ExpansionPanelSummary, MenuItem, Menu
 } from '@material-ui/core';
-import { Mail, Dashboard, AccountCircle, RestaurantMenu, Menu, ExpandMore, FiberNew } from '@material-ui/icons';
+import { Mail, Dashboard, AccountCircle, RestaurantMenu, ExpandMore, FiberNew } from '@material-ui/icons';
+// import MenuIcon from '@material-ui/icons/Menu'
 
 import LoginScreen from './components/LoginScreen';
 import DashboardScreen from './components/DashboardScreen';
@@ -23,6 +24,7 @@ import GenreScreen from './components/GenreScreen';
 import GameScreen from './components/GameScreen';
 import DeveloperScreen from './components/DeveloperScreen';
 import MusicPlayerDialog from './components/dialog/MusicPlayerDialog';
+import MusicScreen from './components/MusicScreen';
 
 const drawerWidth = 300;
 
@@ -33,6 +35,7 @@ class App extends Component {
   state = {
     mobileOpen: false,
     expanded: null,
+    anchorEl: null,
     navList: [
       { 'title': 'Dashboard', 'content': [] },
       { 'title': 'User', 'content': [{ 'name': 'Users', 'url': 'user' }, { 'name': 'Create new user', 'url': 'new-user' }] },
@@ -70,18 +73,29 @@ class App extends Component {
     });
   };
 
+  handleMenu = (event) => {
+    this.setState({ anchorEl: event.currentTarget });
+  }
+
+  handleClose = () => {
+    this.setState({ anchorEl: null });
+  }
+
   constructor(props) {
     super(props)
     this.props.SessionStore.checkingUserLogin()
   }
 
   render() {
-    const { classes, theme } = this.props;
-    const { expanded } = this.state;
+    const { classes } = this.props;
+    // const { classes, theme } = this.props;
+    const { expanded, anchorEl } = this.state;
+    const { isLogin } = this.props.SessionStore;
+    const open = Boolean(anchorEl);
     const drawer = (
       <div style={{ overflowX: 'hidden' }}>
         <div className={classes.toolbar}>
-          <h4 className="text-center mt-3">Administration</h4>
+          <h3 style={{ textAlign: 'center', paddingTop: 16 }}>Administration</h3>
         </div>
         <Divider />
         <List style={{ paddingLeft: 8, paddingRight: 8 }}>
@@ -118,28 +132,57 @@ class App extends Component {
     );
     return (
       <BrowserRouter>
-        {(this.props.SessionStore.isLogin) ?
+        {isLogin ?
           <div>
             <div className={classes.root}>
               <CssBaseline />
               <AppBar position="fixed" className={classes.appBar}>
-                <Toolbar>
-                  <IconButton
+                <Toolbar className={classes.toolBar}>
+                  {/* <IconButton
                     color="inherit"
                     aria-label="Open drawer"
                     onClick={this.handleDrawerToggle}
                     className={classes.menuButton}
                   >
-                    <Menu />
-                  </IconButton>
+                    <MenuIcon />
+                  </IconButton> */}
                   <Typography variant="h6" color="inherit" noWrap>
                     {this.props.ScreenStore.title}
                   </Typography>
+                  <div>
+                    <IconButton
+                      aria-label="account of current user"
+                      aria-controls="menu-appbar"
+                      aria-haspopup="true"
+                      onClick={this.handleMenu}
+                      color="inherit"
+                    >
+                      <AccountCircle />
+                    </IconButton>
+                    <Menu
+                      id="menu-appbar"
+                      anchorEl={this.state.anchorEl}
+                      anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                      keepMounted
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                      open={open}
+                      onClose={this.handleClose}
+                    >
+                      <MenuItem onClick={this.handleClose}>Profile</MenuItem>
+                      <MenuItem onClick={this.handleClose}>My account</MenuItem>
+                    </Menu>
+                  </div>
                 </Toolbar>
               </AppBar>
               <nav className={classes.drawer} >
                 {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-                <Hidden smUp implementation="css">
+                {/* <Hidden smUp implementation="css">
                   <Drawer
                     container={this.props.container}
                     variant="temporary"
@@ -152,7 +195,7 @@ class App extends Component {
                   >
                     {drawer}
                   </Drawer>
-                </Hidden>
+                </Hidden> */}
                 <Hidden xsDown implementation="css">
                   <Drawer
                     classes={{
@@ -174,6 +217,7 @@ class App extends Component {
                   <Route path="/user" component={UserScreen} />
                   <Route path="/new-user" component={CreateUserScreen} />
                   <Route path="/product" component={ProductsScreen} />
+                  <Route path="/music" component={MusicScreen} />
                   <Route path="/new-product" component={CreateProductsScreen} />
                   <Route path="/edit-product" component={CreateProductsScreen} />
                   <Route path="/flatform" component={FlatformScreen} />
@@ -216,11 +260,15 @@ const styles = theme => ({
       width: `calc(100% - ${drawerWidth}px)`,
     },
   },
+  toolBar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
   menuButton: {
     marginRight: 20,
-    [theme.breakpoints.up('sm')]: {
-      display: 'none',
-    },
+    // [theme.breakpoints.up('sm')]: {
+    //   display: 'none',
+    // },
   },
   toolbar: theme.mixins.toolbar,
   drawerPaper: {

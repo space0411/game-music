@@ -11,6 +11,8 @@ import ArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import { purple } from '@material-ui/core/colors';
 import { QueueMusic } from '@material-ui/icons';
+import ColoredScrollbars from '../utils/ColoredScrollbars';
+
 
 function PlayIcon(props) {
     return (
@@ -20,13 +22,13 @@ function PlayIcon(props) {
     );
 }
 
-// function PauseIcon(props) {
-//     return (
-//         <SvgIcon {...props}>
-//             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
-//         </SvgIcon>
-//     );
-// }
+function PauseIcon(props) {
+    return (
+        <SvgIcon {...props}>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+        </SvgIcon>
+    );
+}
 
 function NextIcon(props) {
     return (
@@ -72,14 +74,21 @@ class MusicPlayerDialog extends React.Component {
     audioPlayer
     @observable currentSlider = 0
     @observable openQueueMusic = false
+    @observable currentMusicIndex = 0
     @observable currentMusic
     @observable timeMusic
+    @observable isPlay = false
+    @observable loop = false
+    @observable shuffle = false
+    savedMusicArray = []
+    savedMusic
 
     componentDidMount() {
         this.initAudioPlayer()
     }
 
     initAudioPlayer() {
+        const that = this
         const audioPlayer = document.getElementById('audioPlayer')
         this.audioPlayer = audioPlayer
         // audioPlayer.addEventListener('loadedmetadata', function () {
@@ -88,12 +97,22 @@ class MusicPlayerDialog extends React.Component {
         // }, false)
         audioPlayer.addEventListener('ended', function () {
             console.log('end')
+            that.handleNext()
         })
-        
+        audioPlayer.addEventListener('canplay', function () {
+            that.isPlay = true
+        })
     }
 
     handleDrawerClose = () => {
         this.openQueueMusic = !this.openQueueMusic
+    }
+
+    handleDrawerCloseParent = (event) => {
+        event.preventDefault();
+        if (event.target === event.currentTarget) {
+            this.openQueueMusic = !this.openQueueMusic
+        }
     }
 
     handleSliderChange = (event, newValue) => {
@@ -102,8 +121,9 @@ class MusicPlayerDialog extends React.Component {
         this.audioPlayer.currentTime = rate
     };
 
-    handleMusicItemClick = (item) => {
+    handleMusicItemClick = (item, index) => {
         this.currentMusic = item
+        this.currentMusicIndex = index
     }
 
     handleAudioTimeUpdate = () => {
@@ -136,27 +156,114 @@ class MusicPlayerDialog extends React.Component {
         this.currentSlider = Math.floor(currTime / duration * 100)
         this.timeMusic = fCurrentTime + ' / ' + fDuration
     }
+    handlePrev = () => {
+        this.pauseMusic()
+        const { musics } = this.props.ScreenStore
+        if (musics.length > 0)
+            if (this.currentMusicIndex > 0) {
+                this.currentMusicIndex--
+                this.currentMusic = musics[this.currentMusicIndex]
+            } else {
+                this.currentMusicIndex = 0
+                this.currentMusic = musics[0]
+            }
+    }
+
+    handlePlay = () => {
+        this.isPlay ? this.audioPlayer.pause() : this.audioPlayer.play()
+        this.isPlay = !this.isPlay
+    }
+
+    handleNext = () => {
+        this.pauseMusic()
+        const { musics } = this.props.ScreenStore
+        if (musics.length > 0)
+            if (this.currentMusicIndex < musics.length - 1) {
+                this.currentMusicIndex++
+                this.currentMusic = musics[this.currentMusicIndex]
+            } else {
+                this.currentMusicIndex = 0
+                this.currentMusic = musics[0]
+            }
+    }
+
+    pauseMusic() {
+        this.audioPlayer.pause()
+        this.isPlay = false
+    }
+
+    getMusicInfo(currentMusic) {
+        const { getMusic } = this.props.SessionStore
+        const { musics } = this.props.ScreenStore
+        const data = {
+            id: 999,
+            url: '',
+            name: ''
+        }
+        if (currentMusic) {
+            data.id = currentMusic.id
+            data.url = getMusic(currentMusic.url)
+            data.name = currentMusic.name
+        } else {
+            if (musics.length > 0) {
+                data.id = musics[this.currentMusicIndex].id
+                data.url = getMusic(musics[this.currentMusicIndex].url)
+                data.name = musics[this.currentMusicIndex].name
+            }
+        }
+        this.savedMusic = data
+        return data
+    }
+
+
+    handleShuffle = () => {
+        this.shuffle = !this.shuffle
+        const { musics } = this.props.ScreenStore
+        if (this.shuffle) {
+            this.savedMusicArray = [...musics]
+            function shuffleMusics(array) {
+                return array.slice().sort(() => Math.random() - 0.5);
+            }
+            const arr = shuffleMusics(musics)
+            this.props.ScreenStore.setDataMusicPlayer(arr)
+        } else {
+            this.props.ScreenStore.setDataMusicPlayer(this.savedMusicArray)
+        }
+        this.caculatePrevIndex()
+    }
+
+    caculatePrevIndex() {
+        const that = this
+        function isOdd(element) {
+            return (element.id === that.savedMusic.id);
+        }
+
+        const prevItemIndex = this.props.ScreenStore.musics.findIndex(isOdd);
+        if (prevItemIndex !== -1) {
+            this.currentMusicIndex = prevItemIndex
+            this.currentMusic = this.props.ScreenStore.musics[prevItemIndex]
+        }
+    }
+
+    hanldeLoop = () => {
+        this.loop = !this.loop
+    }
 
     render() {
         const currentMusic = this.currentMusic
         const openQueueMusic = this.openQueueMusic
         const { isOpenMusicPlayer, musics } = this.props.ScreenStore
-        const { getMusic } = this.props.SessionStore
         const { classes } = this.props
-        let musicUrl = ''
-        let musicName = ''
-        if (currentMusic) {
-            musicUrl = getMusic(currentMusic.url)
-            musicName = currentMusic.name
-        }
+        const musicData = this.getMusicInfo(currentMusic)
         let time = '00:00 / 00:00'
         if (this.timeMusic) time = this.timeMusic
         return (
             <div>
                 <audio
                     id='audioPlayer'
-                    src={musicUrl}
+                    src={musicData.url}
                     autoPlay
+                    loop={this.loop}
                     onTimeUpdate={this.handleAudioTimeUpdate}>
                     Your browser does not support the
                     <code>audio</code> element.
@@ -178,50 +285,42 @@ class MusicPlayerDialog extends React.Component {
                     open={isOpenMusicPlayer}
                 >
                     <div className={classes.toolbar}>
-                        <PrevIcon className={classes.nextPrevButton} style={{ fontSize: 32 }} />
-                        <PlayIcon className={classes.iconHover} style={{ fontSize: 45 }} />
-                        <NextIcon className={classes.nextPrevButton} style={{ fontSize: 32 }} />
-                        <ShuffleIcon className={classes.nextPrevButton} />
-                        <LoopIcon className={classes.nextPrevButton} />
-                        {this.Music(musicName, time)}
+                        <PrevIcon onClick={this.handlePrev} className={classes.nextPrevButton} style={styles.normalIcon} />
+                        {
+                            this.isPlay ? <PauseIcon onClick={this.handlePlay} className={classes.iconHover} style={styles.largeIcon} />
+                                : <PlayIcon onClick={this.handlePlay} className={classes.iconHover} style={styles.largeIcon} />
+                        }
+                        <NextIcon onClick={this.handleNext} className={classes.nextPrevButton} style={styles.normalIcon} />
+                        <ShuffleIcon onClick={this.handleShuffle} className={this.shuffle ? classes.nextPrevButtonActived : classes.nextPrevButton} />
+                        <LoopIcon onClick={this.hanldeLoop} className={this.loop ? classes.nextPrevButtonActived : classes.nextPrevButton} />
+                        {this.Music(classes, musicData.name, time)}
                         <VolumeIcon className={classes.nextPrevButton} />
-                        <div style={{ width: 2, height: '70%', backgroundColor: 'gray' }} />
+                        <div style={styles.verticalLine} />
                         <Button onClick={this.handleDrawerClose} variant="contained" color="secondary" className={classes.button}>
                             <QueueMusic className={classes.rightIcon} />
                             Queue music ({musics.length})
                         </Button>
-                        <IconButton onClick={this.handleDrawerClose}>
-                            {isOpenMusicPlayer ? <ArrowDownIcon /> : <ArrowUpIcon />}
-                        </IconButton>
                     </div>
                 </Drawer>
             </div>
         );
     }
 
-    Music = (name, time) => {
+    Music = (classes, name, time) => {
         return (
-            <div style={{ display: 'flex', marginLeft: '5%', marginRight: '5%' }}>
+            <div style={styles.mainMusic}>
                 <div style={{
-                    backgroundImage: "url(https://images.pexels.com/photos/34153/pexels-photo.jpg?auto=compress&cs=tinysrgb&h=350)",
-                    backgroundPosition: 'center',
-                    backgroundSize: 'cover',
-                    backgroundRepeat: 'no-repeat',
-                    borderRadius: 2,
-                    width: 40,
-                    height: 40
+                    ...{
+                        backgroundImage: "url(https://images.pexels.com/photos/34153/pexels-photo.jpg?auto=compress&cs=tinysrgb&h=350)",
+                    }, ...styles.cover
                 }} />
-                <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 20 }}>
-                    <div style={{ display: 'flex', color: 'white', width: 500, justifyContent: 'space-between' }}>
-                        <div style={{
-                            width: 400,
-                            textOverflow: 'ellipsis',
-                            overflow: 'hidden',
-                            whiteSpace: 'nowrap'
-                        }}>{name}</div>
+                <div style={styles.musicInfo}>
+                    <div style={styles.mainText}>
+                        <div style={styles.text}>{name}</div>
                         <div>{time}</div>
                     </div>
                     <Slider
+                        className={classes.slider}
                         value={this.currentSlider}
                         onChange={this.handleSliderChange}
                         aria-labelledby="input-slider"
@@ -248,38 +347,72 @@ class MusicPlayerDialog extends React.Component {
                 }}
                 open={open}
             >
-                <div className={classes.toolbarQueue}>
+                <div onClick={this.handleDrawerCloseParent} className={classes.toolbarQueue}>
                     <div className={classes.playlist}>
-                        <div style={{ marginTop: 16, marginRight: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                        <div style={styles.queueButton}>
                             <IconButton onClick={this.handleDrawerClose}>
                                 {open ? <ArrowDownIcon /> : <ArrowUpIcon />}
                             </IconButton>
                         </div>
-                        <div style={{ marginTop: 5, marginLeft: 16, color: 'gray' }}>PLAYLIST ({musics.length})</div>
-                        <div>
+                        <div style={styles.queueHeader}>PLAYLIST ({musics.length})</div>
+                        <ColoredScrollbars>
                             <List>
                                 {musics.map((item, index) => {
                                     const bg = {
-                                        padding: '10px 20px',
+                                        color: 'white',
                                         backgroundColor: index % 2 === 0 && 'rgba(72,72,72,0.1)',
                                     }
+                                    if (this.currentMusicIndex === index) {
+                                        bg.backgroundColor = 'rgba(239,239,239,0.1)'
+                                        bg.color = purple[400]
+                                    }
                                     return (
-                                        <ListItem onClick={() => this.handleMusicItemClick(item)} className={classes.item} style={bg} button key={index}>
-                                            <div style={{ display: 'flex' }}>
+                                        <ListItem onClick={() => this.handleMusicItemClick(item, index)} className={classes.item} style={{ ...styles.queueItem, ...bg }} button key={index}>
+                                            <div style={styles.queueItemContent}>
                                                 <div>{index + 1}</div>
-                                                <div style={{ marginLeft: 10 }}>{item.name}</div>
+                                                <div style={styles.queueItemName}>{item.name}</div>
                                             </div>
                                         </ListItem>
                                     )
                                 })}
                             </List>
-                        </div>
+                        </ColoredScrollbars>
                     </div>
                 </div>
 
             </Drawer>
         )
     }
+}
+
+const styles = {
+    verticalLine: { width: 2, height: 40, backgroundColor: 'gray' },
+    normalIcon: { fontSize: 32 },
+    largeIcon: { fontSize: 45 },
+    mainMusic: { display: 'flex', marginLeft: '5%', marginRight: '5%' },
+    cover: {
+        backgroundPosition: 'center',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        borderRadius: 2,
+        width: 40,
+        height: 40
+    },
+    musicInfo: { display: 'flex', flexDirection: 'column', marginLeft: 20 },
+    mainText: { display: 'flex', color: 'white', width: 400, justifyContent: 'space-between' },
+    text: {
+        width: 400,
+        textOverflow: 'ellipsis',
+        overflow: 'hidden',
+        whiteSpace: 'nowrap'
+    },
+    queueButton: { marginTop: 16, marginRight: 16, display: 'flex', justifyContent: 'flex-end' },
+    queueHeader: { marginTop: 5, marginLeft: 16, color: 'gray' },
+    queueItem: {
+        padding: '10px 20px',
+    },
+    queueItemContent: { display: 'flex' },
+    queueItemName: { marginLeft: 10 }
 }
 
 const drawerWidth = 'auto';
@@ -336,14 +469,21 @@ const useStyles = theme => ({
     toolbarQueue: {
         height: '100%',
         display: 'flex',
-        justifyContent: 'center',
-        padding: '0 8px 0 0',
+        justifyContent: 'flex-start',
+        padding: '0 8px 0 300px',
         ...theme.mixins.toolbar,
         alignItems: 'stretch'
     },
     nextPrevButton: {
         margin: theme.spacing(1),
         color: '#f5f5f5',
+        '&:hover': {
+            color: purple[400],
+        },
+    },
+    nextPrevButtonActived: {
+        margin: theme.spacing(1),
+        color: purple[500],
         '&:hover': {
             color: purple[400],
         },
@@ -358,15 +498,20 @@ const useStyles = theme => ({
     playlist: {
         display: 'flex',
         flexDirection: 'column',
-        width: '65%',
+        width: '70%',
         backgroundColor: '#0c0e12',
-        color: 'white'
+        color: 'white',
+        paddingBottom: 80,
+        zIndex: 1
     },
     item: {
         '&:hover': {
             color: purple[400],
             backgroundColor: 'rgba(239,239,239,0.1) !important'
         },
+    },
+    slider: {
+        color: purple[500],
     }
 });
 
