@@ -20,6 +20,12 @@ class ScreenStore {
     }
 
     @action
+    closeMusicPlayer() {
+        this.musics = []
+        this.isOpenMusicPlayer = false
+    }
+
+    @action
     setTitle(mytitle) {
         this.title = mytitle
     }

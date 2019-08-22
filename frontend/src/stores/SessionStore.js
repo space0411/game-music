@@ -38,9 +38,7 @@ class SessionsStore {
     @action
     checkingUserLogin() {
         this.getUserInfo().then(data => {
-            if (data)
-                this.isLogin = true
-            else this.isLogin = false
+            data ? this.isLogin = true : this.isLogin = false
         })
     }
 

@@ -4,10 +4,8 @@ import { observable } from 'mobx'
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import { Drawer, List, IconButton, ListItem, Slider, Button } from '@material-ui/core';
+import { Drawer, List, IconButton, ListItem, Slider, Button, Tooltip } from '@material-ui/core';
 
-import ArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-import ArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import SvgIcon from '@material-ui/core/SvgIcon';
 import { purple } from '@material-ui/core/colors';
 import { QueueMusic } from '@material-ui/icons';
@@ -64,6 +62,30 @@ function VolumeIcon(props) {
     return (
         <SvgIcon {...props}>
             <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+        </SvgIcon>
+    );
+}
+
+function ArrowDownIcon(props) {
+    return (
+        <SvgIcon {...props}>
+            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
+        </SvgIcon>
+    );
+}
+
+function ArrowUpIcon(props) {
+    return (
+        <SvgIcon {...props}>
+            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z" />
+        </SvgIcon>
+    );
+}
+
+function CloseIcon(props) {
+    return (
+        <SvgIcon {...props}>
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
         </SvgIcon>
     );
 }
@@ -249,6 +271,11 @@ class MusicPlayerDialog extends React.Component {
         this.loop = !this.loop
     }
 
+    handleMusicPlayerClose = () => {
+        this.audioPlayer.pause()
+        this.props.ScreenStore.closeMusicPlayer()
+    }
+
     render() {
         const currentMusic = this.currentMusic
         const openQueueMusic = this.openQueueMusic
@@ -300,6 +327,12 @@ class MusicPlayerDialog extends React.Component {
                             <QueueMusic className={classes.rightIcon} />
                             Queue music ({musics.length})
                         </Button>
+
+                        <Tooltip title="Close player">
+                            <IconButton size="small" >
+                                <CloseIcon onClick={this.handleMusicPlayerClose} className={classes.iconHover} style={styles.normalIcon} />
+                            </IconButton>
+                        </Tooltip>
                     </div>
                 </Drawer>
             </div>
@@ -350,8 +383,8 @@ class MusicPlayerDialog extends React.Component {
                 <div onClick={this.handleDrawerCloseParent} className={classes.toolbarQueue}>
                     <div className={classes.playlist}>
                         <div style={styles.queueButton}>
-                            <IconButton onClick={this.handleDrawerClose}>
-                                {open ? <ArrowDownIcon /> : <ArrowUpIcon />}
+                            <IconButton size="small" onClick={this.handleDrawerClose}>
+                                {open ? <ArrowDownIcon className={classes.iconHover} style={styles.largeIcon} /> : <ArrowUpIcon className={classes.iconHover} style={styles.largeIcon} />}
                             </IconButton>
                         </div>
                         <div style={styles.queueHeader}>PLAYLIST ({musics.length})</div>
