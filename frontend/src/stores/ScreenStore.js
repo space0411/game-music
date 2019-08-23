@@ -31,8 +31,8 @@ class ScreenStore {
     }
 
     @action
-    setEditEventStage(b, data) {
-        this.isEditEventStage = b
+    setEditEventStage(data) {
+        this.isEditEventStage = true
         this.editEventData = data
     }
 

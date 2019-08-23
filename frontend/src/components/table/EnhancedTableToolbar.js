@@ -7,11 +7,78 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import DeleteIcon from '@material-ui/icons/Delete';
+import CreateIcon from '@material-ui/icons/Create';
 import PlayIcon from '@material-ui/icons/PlayCircleFilled';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
 import InputBase from '@material-ui/core/InputBase';
 import { fade } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
+
+class EnhancedTableToolbar extends React.Component {
+    render() {
+        const { numSelected, classes, toolbarName, handleSearch, handlePlayMusic, handleCreate } = this.props;
+        return (
+            <Toolbar
+                className={classNames(classes.root, {
+                    [classes.highlight]: numSelected > 0,
+                })}
+            >
+                <div className={classes.title}>
+                    {numSelected > 0 ? (
+                        <Typography color="inherit" variant="subtitle1">
+                            {numSelected} selected
+                        </Typography>
+                    ) : (
+                            <Typography variant="h6" id="tableTitle">
+                                {toolbarName}
+                            </Typography>
+                        )}
+                </div>
+                <div className={classes.spacer} />
+                <div className={classes.actions}>
+                    {handlePlayMusic &&
+                        <Tooltip title="Play list">
+                            <IconButton onClick={handlePlayMusic} className={classes.icon} aria-label="Play list">
+                                <PlayIcon />
+                            </IconButton>
+                        </Tooltip>
+                    }
+                    {numSelected > 0 ? (
+                        <Tooltip title="Delete">
+                            <IconButton aria-label="Delete">
+                                <DeleteIcon />
+                            </IconButton>
+                        </Tooltip>
+                    ) : (
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                {handleCreate &&
+                                    <Tooltip title="Create">
+                                        <IconButton onClick={handleCreate} className={classes.icon} aria-label="Create">
+                                            <CreateIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                }
+                                <div className={classes.search}>
+                                    <div className={classes.searchIcon}>
+                                        <SearchIcon />
+                                    </div>
+                                    <InputBase
+                                        onChange={event => handleSearch(event.target.value)}
+                                        placeholder="Search…"
+                                        classes={{
+                                            root: classes.inputRoot,
+                                            input: classes.inputInput,
+                                        }}
+                                        inputProps={{ 'aria-label': 'search' }}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                </div>
+            </Toolbar>
+        );
+    }
+};
 
 const toolbarStyles = theme => ({
     root: {
@@ -75,66 +142,10 @@ const toolbarStyles = theme => ({
         },
     },
     icon: {
-        padding: 0
+        fontSize: 24,
+        padding: theme.spacing(1)
     }
 });
-
-class EnhancedTableToolbar extends React.Component {
-    render() {
-        const { numSelected, classes, toolbarName, handleSearch, handlePlayMusic } = this.props;
-        return (
-            <Toolbar
-                className={classNames(classes.root, {
-                    [classes.highlight]: numSelected > 0,
-                })}
-            >
-                <div className={classes.title}>
-                    {numSelected > 0 ? (
-                        <Typography color="inherit" variant="subtitle1">
-                            {numSelected} selected
-                        </Typography>
-                    ) : (
-                            <Typography variant="h6" id="tableTitle">
-                                {toolbarName}
-                            </Typography>
-                        )}
-                </div>
-                <div className={classes.spacer} />
-                <div className={classes.actions}>
-                    {handlePlayMusic &&
-                        <Tooltip title="Play list">
-                            <IconButton onClick={handlePlayMusic} className={classes.icon} aria-label="Play list">
-                                <PlayIcon />
-                            </IconButton>
-                        </Tooltip>
-                    }
-                    {numSelected > 0 ? (
-                        <Tooltip title="Delete">
-                            <IconButton aria-label="Delete">
-                                <DeleteIcon />
-                            </IconButton>
-                        </Tooltip>
-                    ) : (
-                            <div className={classes.search}>
-                                <div className={classes.searchIcon}>
-                                    <SearchIcon />
-                                </div>
-                                <InputBase
-                                    onChange={event => handleSearch(event.target.value)}
-                                    placeholder="Search…"
-                                    classes={{
-                                        root: classes.inputRoot,
-                                        input: classes.inputInput,
-                                    }}
-                                    inputProps={{ 'aria-label': 'search' }}
-                                />
-                            </div>
-                        )}
-                </div>
-            </Toolbar>
-        );
-    }
-};
 
 EnhancedTableToolbar.propTypes = {
     classes: PropTypes.object.isRequired,

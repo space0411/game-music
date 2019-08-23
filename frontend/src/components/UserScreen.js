@@ -1,113 +1,235 @@
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { observable } from 'mobx';
-import ItemUser from './contents/ItemUser';
-import { Pagination, PaginationItem, PaginationLink } from 'reactstrap';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import {
+    Table, TableBody, TableCell, TablePagination, TableRow,
+    Paper, Checkbox, IconButton
+} from '@material-ui/core';
+import { Delete, Edit } from '@material-ui/icons';
+import { Redirect } from "react-router-dom";
+import Moment from 'react-moment';
+import moment from 'moment';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
+
+import { HeadStyle } from './table/HeadKey';
+import EnhancedTableHead from './table/EnhancedTableHead';
+import EnhancedTableToolbar from './table/EnhancedTableToolbar';
+import AlertDialog from './dialog/AlertDialog';
+
+function desc(a, b, orderBy) {
+    if (b[orderBy] < a[orderBy]) {
+        return -1;
+    }
+    if (b[orderBy] > a[orderBy]) {
+        return 1;
+    }
+    return 0;
+}
+
+function stableSort(array, cmp) {
+    const stabilizedThis = array.map((el, index) => [el, index]);
+    stabilizedThis.sort((a, b) => {
+        const order = cmp(a[0], b[0]);
+        if (order !== 0) return order;
+        return a[1] - b[1];
+    });
+    return stabilizedThis.map(el => el[0]);
+}
+
+function getSorting(order, orderBy) {
+    return order === 'desc' ? (a, b) => desc(a, b, orderBy) : (a, b) => -desc(a, b, orderBy);
+}
 
 @inject('ScreenStore', 'SessionStore')
 @observer
 class UserScreen extends Component {
-
-    @observable page = 1
-    @observable listUsers = []
-    @observable isSuccess = false
-    // Role
-    @observable isOpenFilterRole = false
-    @observable roleSelected = 'all'
-    @observable roleFilter = ['all', 'admin', 'user']
-
-    //Paging
-    @observable numberstart = 1;
-    @observable numberend = 0;
-    @observable active = 1;
-    @observable pagerow = [];
-
-    constructor(props) {
-        super(props);
-        this.props.ScreenStore.setTitle('All User')
-        this.handleItemSelection = this.handleItemSelection.bind(this)
+    screenName = 'User'
+    @observable data = []
+    @observable openAlert = false
+    @observable productId
+    @observable alert = {
+        title: 'Alert',
+        content: 'Do you want delete ?'
     }
 
-    handleItemSelection(item) {
-        console.log(item)
-    }
+    state = {
+        order: 'desc',
+        orderBy: 'id',
+        selected: [],
+        page: 0,
+        rowsPerPage: 20,
+    };
 
     componentDidMount() {
         this.getUser()
     }
 
-    onChangePage = (pageNumber) => {
-        if (this.active !== pageNumber) {
-            this.active = pageNumber;
-            this.getUser()
+    handleRequestSort = (event, property) => {
+        const orderBy = property;
+        let order = 'desc';
+
+        if (this.state.orderBy === property && this.state.order === 'desc') {
+            order = 'asc';
         }
+
+        this.setState({ order, orderBy });
+    };
+
+    handleSelectAllClick = event => {
+        if (event.target.checked) {
+            this.setState(state => ({ selected: this.data.map(n => n.id) }));
+            return;
+        }
+        this.setState({ selected: [] });
+    };
+
+    handleClick = (event, id) => {
+        const { selected } = this.state;
+        const selectedIndex = selected.indexOf(id);
+        let newSelected = [];
+
+        if (selectedIndex === -1) {
+            newSelected = newSelected.concat(selected, id);
+        } else if (selectedIndex === 0) {
+            newSelected = newSelected.concat(selected.slice(1));
+        } else if (selectedIndex === selected.length - 1) {
+            newSelected = newSelected.concat(selected.slice(0, -1));
+        } else if (selectedIndex > 0) {
+            newSelected = newSelected.concat(
+                selected.slice(0, selectedIndex),
+                selected.slice(selectedIndex + 1),
+            );
+        }
+
+        this.setState({ selected: newSelected });
+    };
+
+    handleChangePage = (event, page) => {
+        this.setState({ page });
+    };
+
+    handleChangeRowsPerPage = event => {
+        this.setState({ rowsPerPage: event.target.value });
+    };
+
+    isSelected = id => this.state.selected.indexOf(id) !== -1;
+
+    handleEditClick = (item) => {
+        this.props.ScreenStore.setEditEventStage(item)
+    }
+
+    handleDeleteClick = (item) => {
+        this.alert = {
+            title: 'Alert',
+            content: `Do you want delete product "${item.name}" with id=${item.id} ?`
+        }
+        this.productId = item.id
+        this.openAlert = true
+    }
+
+    handleAlertClose = () => {
+        this.openAlert = false
+    }
+
+    handleAgreeDelete = () => {
+        this.openAlert = false
+        this.delete(this.productId)
+    }
+
+    handleSearch = (searchText) => {
+        if (searchText.length > 3)
+            this.get(searchText)
+        if (searchText.length === 0)
+            this.get()
     }
 
     render() {
-        let items = []
-        for (let number = this.numberstart; number <= this.numberend; number++) {
-            items.push(
-                <PaginationItem key={number} active={number === this.active} onClick={() => this.onChangePage(number)}>
-                    <PaginationLink>
-                        {number}
-                    </PaginationLink>
-                </PaginationItem>,
-            );
+        if (this.props.ScreenStore.isEditEventStage) {
+            return <Redirect to='new-edit-user' />
         }
-        return (
-            <div id="container">
-                <table className="table table-hover">
-                    <thead>
-                        <tr>
-                            <th scope="col" style={{ width: '5%' }} className="text-center">#</th>
-                            <th scope="col" style={{ width: '5%' }} className="text-center">ID</th>
-                            <th scope="col" style={{ width: '10%' }} className="text-center">
-                                <Dropdown isOpen={this.isOpenFilterRole} toggle={this.toggleRoleFilter}>
-                                    <DropdownToggle outline color="primary" size="sm">
-                                        Role {this.roleSelected}
-                                    </DropdownToggle>
-                                    <DropdownMenu>{
-                                        this.roleFilter.map((item, index) =>
-                                            <DropdownItem key={index} onClick={() => this.roleSelected = item}>{item}</DropdownItem>
-                                        )}
-                                    </DropdownMenu>
-                                </Dropdown></th>
-                            <th scope="col" style={{ width: '20%' }} className="text-center">UserName</th>
-                            <th scope="col" style={{ width: '15%' }} className="text-center">Name</th>
-                            <th scope="col" style={{ width: '10%' }} className="text-center">Phone</th>
-                            <th scope="col" style={{ width: '20%' }} className="text-center">Address</th>
-                            <th scope="col" style={{ width: '15%' }} className="text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>{
-                        this.listUsers.map((item, idx) => {
-                            if (item.role !== this.roleSelected && this.roleSelected !== 'all') {
-                                return null;
-                            }
-                            return <ItemUser key={idx} data={item} index={idx} />
-                        })}
-                    </tbody>
-                </table>
-                <div className="d-flex justify-content-center">
-                    <Pagination className="mt-2">
-                        <PaginationItem>
-                            <PaginationLink previous disabled={this.active === 1} onClick={this.OnPrevPage} />
-                        </PaginationItem>
-                        {items}
-                        <PaginationItem>
-                            <PaginationLink next disabled={this.active === this.maxpage} onClick={this.onNextPage} />
-                        </PaginationItem>
-                    </Pagination>
-                </div>
-            </div>
-        );
-    }
+        const { classes } = this.props;
+        const data = this.data;
+        const { order, orderBy, selected, rowsPerPage, page } = this.state;
+        const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
-    toggleRoleFilter = () => {
-        this.isOpenFilterRole = !this.isOpenFilterRole
+        return (
+            <Paper className={classes.root}>
+                <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
+                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} handleSearch={this.handleSearch} />
+                <div className={classes.tableWrapper}>
+                    <Table className={classes.table} aria-labelledby="tableTitle">
+                        <EnhancedTableHead
+                            headStyle={HeadStyle.User}
+                            numSelected={selected.length}
+                            order={order}
+                            orderBy={orderBy}
+                            onSelectAllClick={this.handleSelectAllClick}
+                            onRequestSort={this.handleRequestSort}
+                            rowCount={data.length}
+                        />
+                        <TableBody>
+                            {stableSort(data, getSorting(order, orderBy))
+                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map(n => {
+                                    const isSelected = this.isSelected(n.id);
+                                    return (
+                                        <TableRow
+                                            hover
+                                            // onClick={event => this.handleClick(event, n.id)}
+                                            role="checkbox"
+                                            aria-checked={isSelected}
+                                            tabIndex={-1}
+                                            key={n.id}
+                                            selected={isSelected}
+                                        >
+                                            <TableCell padding="checkbox">
+                                                <Checkbox onChange={() => this.handleClick(undefined, n.id)} checked={isSelected} />
+                                            </TableCell>
+                                            <TableCell component="th" scope="row" padding="none">{n.id}</TableCell>
+                                            <TableCell component="th" scope="row" padding="none">{n.name}</TableCell>
+                                            <TableCell component="th" scope="row" padding="none">{n.role}</TableCell>
+                                            <TableCell component="th" scope="row" padding="none">{n.email}</TableCell>
+                                            <TableCell component="th" scope="row" padding="none">{n.phone}</TableCell>
+                                            <TableCell component="th" scope="row" padding="none"><Moment format="D MMM YYYY hh:mm">{moment(n.createdAt)}</Moment></TableCell>
+                                            <TableCell align="right">
+                                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
+                                                    <IconButton onClick={() => this.handleEditClick(n)} color="primary" className={classes.button} aria-label="Edit">
+                                                        <Edit />
+                                                    </IconButton>
+                                                    <IconButton onClick={() => this.handleDeleteClick(n)} color="secondary" className={classes.button} aria-label="Delete">
+                                                        <Delete />
+                                                    </IconButton>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            {emptyRows > 0 && (
+                                <TableRow style={{ height: 49 * emptyRows }}>
+                                    <TableCell colSpan={6} />
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+                <TablePagination
+                    rowsPerPageOptions={[10, 20, 40]}
+                    component="div"
+                    count={data.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    backIconButtonProps={{
+                        'aria-label': 'Previous Page',
+                    }}
+                    nextIconButtonProps={{
+                        'aria-label': 'Next Page',
+                    }}
+                    onChangePage={this.handleChangePage}
+                    onChangeRowsPerPage={this.handleChangeRowsPerPage}
+                />
+            </Paper>
+        );
     }
 
     getUser() {
@@ -121,78 +243,28 @@ class UserScreen extends Component {
                 page: this.active,
                 rowsOnPage: 20
             })
-        })
-            .then((result) => {
-                return result.json();
-            }).then((jsonResult) => {
-                console.log(jsonResult);
-                if (jsonResult.success) {
-                    this.listUsers = jsonResult.data.list
-                    this.isSuccess = true
-                    this.pagging(jsonResult.data.totalRows)
-                } else {
-                    this.isSuccess = false
-                }
-            }).catch((error) => {
-                console.error(error);
-            });
-    }
-
-    onNextPage = () => {
-        if (this.active === this.numberend && this.numberend !== this.maxpage) {
-            this.numberend += 1;
-            this.numberstart += 1;
-            this.active += 1;
-        }
-        else
-            this.active += 1;
-        this.getUser()
-    }
-    OnPrevPage = () => {
-        if (this.active === this.numberstart && this.numberstart !== 1) {
-            this.active -= 1;
-            this.numberend -= 1;
-            this.numberstart -= 1;
-        }
-        else
-            this.active -= 1;
-        this.getUser()
-    }
-
-    pagging(size) {
-        // Paging
-        //let size = jsonResult.data.totalRows;
-        if (size % 20 !== 0) {
-            this.maxpage = parseInt(size / 20) + 1;
-        } else {
-            this.maxpage = size / 20;
-        }
-        if (this.maxpage <= 5) {
-            this.numberend = this.maxpage;;
-        } else {
-            if (this.active > this.numberstart && this.active < this.numberend) {
-
-            } else {
-                if (this.active + 4 > this.maxpage) {
-                    this.numberend = this.maxpage;
-                    if (this.active - 4 < 1)
-                        this.numberstart = 1;
-                    else {
-                        if (this.numberend - (this.active - 4) > 5)
-                            this.numberstart = this.numberend - 4;
-                        else
-                            this.numberstart = this.active - 4;
-
-                    }
-                } else {
-                    this.numberend = this.active === 1 ? this.active + 4 : this.active + 3;
-                    this.numberstart = this.active === 1 ? this.active : this.active - 1;
-                }
-            }
-        }
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success)
+                this.data = jsonResult.data.list
+        }).catch((error) => {
+            console.error(error);
+        });
     }
 }
 const styles = theme => ({
+    root: {
+        width: '100%',
+        marginTop: theme.spacing(3),
+    },
+    table: {
+        minWidth: 1020,
+    },
+    tableWrapper: {
+        overflowX: 'auto',
+    },
     button: {
         margin: theme.spacing(1),
     },

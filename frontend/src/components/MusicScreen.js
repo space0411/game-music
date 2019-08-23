@@ -223,7 +223,7 @@ class MusicScreen extends React.Component {
                 this.data = jsonResult.data.list
             else {
                 this.alert = {
-                    title: jsonResult.success,
+                    title: 'Alert',
                     content: jsonResult.message
                 }
                 this.openAlert = true
@@ -353,7 +353,7 @@ class MusicScreen extends React.Component {
             }).then((jsonResult) => {
                 console.log(jsonResult);
                 this.alert = {
-                    title: jsonResult.success,
+                    title: 'Alert',
                     content: jsonResult.message
                 }
                 this.openAlert = true

@@ -82,6 +82,7 @@ class ProductsScreen extends React.Component {
         title: 'Alert',
         content: 'Do you want delete ?'
     }
+    @observable isCreateProduct = false
 
     constructor(props) {
         super(props);
@@ -147,7 +148,7 @@ class ProductsScreen extends React.Component {
     isSelected = id => this.state.selected.indexOf(id) !== -1;
 
     handleEditClick = (item) => {
-        this.props.ScreenStore.setEditEventStage(true, item)
+        this.props.ScreenStore.setEditEventStage(item)
     }
 
     handleDeleteClick = (item) => {
@@ -174,10 +175,12 @@ class ProductsScreen extends React.Component {
         if (searchText.length === 0)
             this.getProducts()
     }
-
+    handleCreateProduct = () => {
+        this.isCreateProduct = true
+    }
     render() {
-        if (this.props.ScreenStore.isEditEventStage) {
-            return <Redirect to='/edit-product' />
+        if (this.props.ScreenStore.isEditEventStage || this.isCreateProduct) {
+            return <Redirect to='new-edit-product' />
         }
         const { classes } = this.props;
         const data = this.data;
@@ -187,7 +190,7 @@ class ProductsScreen extends React.Component {
         return (
             <Paper className={classes.root}>
                 <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
-                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} handleSearch={this.handleSearch} />
+                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} handleSearch={this.handleSearch} handleCreate={this.handleCreateProduct} />
                 <div className={classes.tableWrapper}>
                     <Table className={classes.table} aria-labelledby="tableTitle">
                         <EnhancedTableHead

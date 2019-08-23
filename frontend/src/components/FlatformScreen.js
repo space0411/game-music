@@ -8,7 +8,6 @@ import {
     Paper, Checkbox, IconButton
 } from '@material-ui/core';
 import { Delete, Edit } from '@material-ui/icons';
-import { Redirect } from "react-router-dom";
 
 import EnhancedTableHead from './table/EnhancedTableHead';
 import EnhancedTableToolbar from './table/EnhancedTableToolbar';
@@ -187,9 +186,6 @@ class FlatformScreen extends React.Component {
     }
 
     render() {
-        if (this.props.ScreenStore.isEditEventStage) {
-            return <Redirect to='/edit-product' />
-        }
         const { classes } = this.props;
         const data = this.data;
         const { order, orderBy, selected, rowsPerPage, page } = this.state;

@@ -98,16 +98,16 @@ const dashboardRoutes = [
     layout: "/admin"
   },
   {
-    path: "/new-user",
-    name: "New User",
+    path: "/new-edit-user",
+    name: "New/Edit User",
     rtlName: "قائمة الجدول",
     icon: Create,
     component: CreateUserScreen,
     layout: "/admin"
   },
   {
-    path: "/new-product",
-    name: "New Product",
+    path: "/new-edit-product",
+    name: "New/Edit Product",
     rtlName: "قائمة الجدول",
     icon: Create,
     component: CreateProductsScreen,

@@ -94,7 +94,6 @@ class App extends Component {
   }
 
   componentDidUpdate(e) {
-    console.log(e.history.location.pathname, e.location.pathname)
     if (e.history.location.pathname !== e.location.pathname) {
       this.mainPanel.current.scrollTop = 0;
       if (this.state.mobileOpen) {

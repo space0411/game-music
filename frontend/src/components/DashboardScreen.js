@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { inject, observer } from "mobx-react";
+import { observable } from "mobx";
 // nodejs library to set properties for components
 import PropTypes from "prop-types";
 // react plugin for creating charts
@@ -7,7 +8,6 @@ import ChartistGraph from "react-chartist";
 // @material-ui/core
 import withStyles from "@material-ui/core/styles/withStyles";
 // @material-ui/icons
-import Store from "@material-ui/icons/Store";
 import Warning from "@material-ui/icons/Warning";
 import DateRange from "@material-ui/icons/DateRange";
 import LocalOffer from "@material-ui/icons/LocalOffer";
@@ -40,11 +40,12 @@ import {
 } from "./variables/charts.jsx";
 
 import dashboardStyle from "./assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
-import { FileCopy, InfoOutlined } from '@material-ui/icons';
+import { FileCopy, Games, RestaurantMenu } from '@material-ui/icons';
 
 @inject('SessionStore', 'ScreenStore')
 @observer
 class DashboardScreen extends Component {
+    @observable data
 
     constructor(props) {
         super(props);
@@ -64,8 +65,48 @@ class DashboardScreen extends Component {
         this.setState({ value: index });
     };
 
+    componentDidMount() {
+        this.get()
+    }
+
+    get() {
+        fetch(`${this.props.SessionStore.API_URL}dashboard/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                this.data = jsonResult.data
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    getCardHeaderValue() {
+        const tempData = {
+            usedSpace: '49/50',
+            game: 0,
+            product: 0,
+            account: 0
+        }
+        const data = this.data
+        if (data) {
+            tempData.game = data.totalGame
+            tempData.account = data.totalAccount
+            tempData.product = data.totalProduct
+        }
+        return tempData
+    }
+
     render() {
         const { classes } = this.props;
+        const headCardData = this.getCardHeaderValue()
         return (
             <div>
                 <GridContainer>
@@ -77,7 +118,7 @@ class DashboardScreen extends Component {
                                 </CardIcon>
                                 <p className={classes.cardCategory}>Used Space</p>
                                 <h3 className={classes.cardTitle}>
-                                    49/50 <small>GB</small>
+                                    {headCardData.usedSpace} <small>GB</small>
                                 </h3>
                             </CardHeader>
                             <CardFooter stats>
@@ -87,7 +128,7 @@ class DashboardScreen extends Component {
                                     </Danger>
                                     <a href="#pablo" onClick={e => e.preventDefault()}>
                                         Get more space
-                  </a>
+                                    </a>
                                 </div>
                             </CardFooter>
                         </Card>
@@ -96,10 +137,10 @@ class DashboardScreen extends Component {
                         <Card>
                             <CardHeader color="success" stats icon>
                                 <CardIcon color="success">
-                                    <Store />
+                                    <Games />
                                 </CardIcon>
-                                <p className={classes.cardCategory}>Revenue</p>
-                                <h3 className={classes.cardTitle}>$34,245</h3>
+                                <p className={classes.cardCategory}>Game</p>
+                                <h3 className={classes.cardTitle}>{headCardData.game}</h3>
                             </CardHeader>
                             <CardFooter stats>
                                 <div className={classes.stats}>
@@ -113,16 +154,16 @@ class DashboardScreen extends Component {
                         <Card>
                             <CardHeader color="danger" stats icon>
                                 <CardIcon color="danger">
-                                    <InfoOutlined />
+                                    <RestaurantMenu />
                                 </CardIcon>
-                                <p className={classes.cardCategory}>Fixed Issues</p>
-                                <h3 className={classes.cardTitle}>75</h3>
+                                <p className={classes.cardCategory}>Product</p>
+                                <h3 className={classes.cardTitle}>{headCardData.product}</h3>
                             </CardHeader>
                             <CardFooter stats>
                                 <div className={classes.stats}>
                                     <LocalOffer />
                                     Tracked from Github
-                </div>
+                                </div>
                             </CardFooter>
                         </Card>
                     </GridItem>
@@ -132,14 +173,14 @@ class DashboardScreen extends Component {
                                 <CardIcon color="info">
                                     <Accessibility />
                                 </CardIcon>
-                                <p className={classes.cardCategory}>Followers</p>
-                                <h3 className={classes.cardTitle}>+245</h3>
+                                <p className={classes.cardCategory}>User</p>
+                                <h3 className={classes.cardTitle}>+{headCardData.account}</h3>
                             </CardHeader>
                             <CardFooter stats>
                                 <div className={classes.stats}>
                                     <Update />
                                     Just Updated
-                </div>
+                                </div>
                             </CardFooter>
                         </Card>
                     </GridItem>

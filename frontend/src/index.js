@@ -6,6 +6,7 @@ import { createBrowserHistory } from "history";
 import { Router, Route, Switch, Redirect } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'typeface-roboto';
+import './components/assets/css/material-dashboard-react.css'
 
 import LoginScreen from './components/LoginScreen';
 import App from './App';

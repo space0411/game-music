@@ -134,7 +134,7 @@ class CreateProductsScreen extends React.Component {
                 content: jsonResult.message
             }
             this.openAlert = true
-            if (jsonResult.success)
+            if (jsonResult.success && this.files.length > 0)
                 this.uploadImage(jsonResult.data.id)
         }).catch((error) => {
             console.error(error);
@@ -523,6 +523,7 @@ class CreateProductsScreen extends React.Component {
                         return false
                     }
                 })
+            // clear Edit Data ScreenStore
             this.props.ScreenStore.clearEditEventStage()
         }
         console.log('category', this.selectedCate);

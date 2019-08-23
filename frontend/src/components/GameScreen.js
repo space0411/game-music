@@ -8,7 +8,6 @@ import {
     Paper, Checkbox, IconButton
 } from '@material-ui/core';
 import { Delete, Edit } from '@material-ui/icons';
-import { Redirect } from "react-router-dom";
 import Moment from 'react-moment';
 
 import EnhancedTableHead from './table/EnhancedTableHead';
@@ -62,7 +61,7 @@ const styles = theme => ({
 });
 
 
-@inject('ScreenStore', 'SessionStore')
+@inject('SessionStore')
 @observer
 class GameScreen extends React.Component {
     screenName = 'Game'
@@ -78,11 +77,6 @@ class GameScreen extends React.Component {
     @observable alertEdit = {
         title: 'Edit',
         content: 'Fill a name for edit'
-    }
-
-    constructor(props) {
-        super(props);
-        this.props.ScreenStore.setTitle(this.screenName)
     }
 
     state = {
@@ -188,9 +182,6 @@ class GameScreen extends React.Component {
     }
 
     render() {
-        if (this.props.ScreenStore.isEditEventStage) {
-            return <Redirect to='/edit-product' />
-        }
         const { classes } = this.props;
         const data = this.data;
         const { order, orderBy, selected, rowsPerPage, page } = this.state;
@@ -234,7 +225,7 @@ class GameScreen extends React.Component {
                                             <TableCell component="th" scope="row" padding="none">{n.name}</TableCell>
                                             <TableCell component="th" scope="row" padding="none">{n.idDeveloper}</TableCell>
                                             <TableCell component="th" scope="row" padding="none">{n.createdBy}</TableCell>
-                                            <TableCell ><Moment format="D MMM YYYY" unix>{n.releaseDate}</Moment></TableCell>
+                                            <TableCell component="th" scope="row" padding="none"><Moment format="D MMM YYYY" unix>{n.releaseDate}</Moment></TableCell>
                                             <TableCell align="right">
                                                 <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
                                                     <IconButton onClick={() => this.handleEditClick(n)} color="primary" className={classes.button} aria-label="Edit">

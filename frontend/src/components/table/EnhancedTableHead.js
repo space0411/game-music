@@ -46,6 +46,16 @@ const rowsMusic = [
     { id: 'options', numeric: true, disablePadding: false, label: '' },
 ];
 
+const rowsUser = [
+    { id: 'id', numeric: false, disablePadding: true, label: 'ID' },
+    { id: 'name', numeric: false, disablePadding: true, label: 'Name' },
+    { id: 'role', numeric: false, disablePadding: true, label: 'Role' },
+    { id: 'email', numeric: false, disablePadding: true, label: 'Email' },
+    { id: 'phone', numeric: false, disablePadding: true, label: 'Phone' },
+    { id: 'createdAt', numeric: false, disablePadding: true, label: 'createdAt' },
+    { id: 'options', numeric: true, disablePadding: false, label: '' },
+];
+
 export default class EnhancedTableHead extends React.Component {
     createSortHandler = property => event => {
         this.props.onRequestSort(event, property);
@@ -57,6 +67,8 @@ export default class EnhancedTableHead extends React.Component {
         super(props)
         const headStyle = this.props.headStyle
         switch (headStyle) {
+            case HeadStyle.User: this.rows = [...rowsUser]
+                break
             case HeadStyle.Product: this.rows = [...rowsProduct]
                 break
             case HeadStyle.Flatform: this.rows = [...rowsFlatform]

@@ -329,8 +329,8 @@ class MusicPlayerDialog extends React.Component {
                         </Button>
 
                         <Tooltip title="Close player">
-                            <IconButton size="small" >
-                                <CloseIcon onClick={this.handleMusicPlayerClose} className={classes.iconHover} style={styles.normalIcon} />
+                            <IconButton size="small" onClick={this.handleMusicPlayerClose}>
+                                <CloseIcon className={classes.iconHover} style={styles.normalIcon} />
                             </IconButton>
                         </Tooltip>
                     </div>

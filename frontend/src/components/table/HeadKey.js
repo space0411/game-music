@@ -8,7 +8,8 @@ export const HeadStyle = {
     Flatform: 2,
     Game: 3,
     Developer: 4,
-    Music: 5
+    Music: 5,
+    User: 6,
 }
 
 function HeadKey() { }
