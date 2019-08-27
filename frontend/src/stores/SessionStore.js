@@ -1,10 +1,10 @@
 import { observable, action } from 'mobx';
 
-const BASE_URL = 'http://localhost:1338/'
 const BASE_API_URL = 'http://localhost:1338/api/v1/'
+const DEPLOY_API_URL = 'http://ddnhat.ddns.net/api/v1/'
 
 class SessionsStore {
-    @observable API_URL = BASE_API_URL
+    @observable API_URL = process.env.NODE_ENV === 'development' ? BASE_API_URL : DEPLOY_API_URL
     @observable isLogin = false
     @observable userInfo = null
     @observable userToken = null
@@ -16,12 +16,12 @@ class SessionsStore {
 
     @action
     getProductImage(url) {
-        return `${BASE_URL}image?name=product/${url}`
+        return `${API_URL}image?name=product/${url}`
     }
 
     @action
     getMusic(url) {
-        return `${BASE_URL}music?url=${url}`
+        return `${API_URL}music?url=${url}`
     }
 
     @action
