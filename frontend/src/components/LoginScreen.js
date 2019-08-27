@@ -10,8 +10,8 @@ import PropTypes from 'prop-types';
 @inject('SessionStore')
 @observer
 class LoginScreen extends Component {
-    @observable userName = 'ddnhat0411@gmail.com'
-    @observable password = '12345678'
+    @observable userName = ''
+    @observable password = ''
     @observable message
 
     constructor(props) {
