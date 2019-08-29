@@ -8,21 +8,29 @@ class EditDialog extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            name: ''
+            name: '',
+            url: ''
         }
     }
 
     handleChangeName = (e) => {
         this.setState({ name: e.target.value })
+        const data = this.props.data
+        data.name = e.target.value
     }
 
-    handleApplyChange = (id) => {
-        if (this.state.name.length < 1) {
+    handleChangeUrl = (e) => {
+        this.setState({ url: e.target.value })
+        const data = this.props.data
+        data.url = e.target.value
+    }
+
+    handleApplyChange = (data) => {
+        if (data.name.length < 1) {
             return
         }
-        const name = this.state.name
-        this.props.handleAgree(name, id)
-        this.setState({ name: '' })
+        this.props.handleAgree(data)
+        this.setState({ name: '', url: '' })
     }
 
     render() {
@@ -41,15 +49,25 @@ class EditDialog extends React.Component {
                         </DialogContentText>
                         <TextField
                             required
-                            label={data.name}
+                            label='Name'
                             className={classes.textField}
-                            value={this.state.name}
+                            value={data.name || ''}
                             onChange={this.handleChangeName}
                             margin="normal" />
+                        {data.url &&
+                            <TextField
+                                required
+                                label='Url'
+                                className={classes.textField}
+                                value={data.url || ''}
+                                onChange={this.handleChangeUrl}
+                                margin="normal" />
+                        }
+
                     </DialogContent>
                     <DialogActions>
                         <div>
-                            <Button onClick={() => this.handleApplyChange(data.id)} color="primary">Apply</Button>
+                            <Button onClick={() => this.handleApplyChange(data)} color="primary">Apply</Button>
                             <Button onClick={handleClose} color="primary" autoFocus>Close</Button>
                         </div>
                     </DialogActions>

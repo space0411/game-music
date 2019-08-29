@@ -314,10 +314,10 @@ class MusicScreen extends React.Component {
         this.deleteMusic(this.productId)
     }
 
-    handleAgreeEdit = (name, id) => {
-        console.log(name, id)
+    handleAgreeEdit = (item) => {
+        console.log('Edit data', item.name, item.id)
         this.openEditAlert = false
-        this.editMusic(name, id)
+        this.editMusic(item.name, item.id)
     }
 
     handlePlayMusic = () => {

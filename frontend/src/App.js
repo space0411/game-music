@@ -12,7 +12,7 @@ import withStyles from "@material-ui/core/styles/withStyles";
 import Navbar from "./components/custom/Navbars/Navbar.jsx";
 import Footer from "./components/custom/Footer/Footer.jsx";
 import Sidebar from "./components/custom/Sidebar/Sidebar.jsx";
-import FixedPlugin from "./components/custom/FixedPlugin/FixedPlugin.jsx";
+// import FixedPlugin from "./components/custom/FixedPlugin/FixedPlugin.jsx";
 import MusicPlayerDialog from './components/dialog/MusicPlayerDialog';
 
 import routes from "./routes.js";
@@ -21,6 +21,8 @@ import dashboardStyle from "./components/assets/jss/material-dashboard-react/lay
 
 import image from "./components/assets/img/sidebar-2.jpg";
 import logo from "./components/assets/img/reactlogo.png";
+import UserProfileDialog from './components/dialog/UserProfileDialog';
+import AlertDialog from './components/dialog/AlertDialog';
 
 let ps;
 const switchRoutes = (
@@ -41,7 +43,7 @@ const switchRoutes = (
   </Switch>
 );
 
-@inject('SessionStore')
+@inject('SessionStore', 'ScreenStore')
 @observer
 class App extends Component {
 
@@ -50,7 +52,11 @@ class App extends Component {
     color: "blue",
     hasImage: true,
     fixedClasses: "dropdown show",
-    mobileOpen: false
+    mobileOpen: false,
+    alertLogout: {
+      title: 'Alert',
+      content: 'Do you want logout?'
+    }
   };
 
   mainPanel = React.createRef();
@@ -116,7 +122,8 @@ class App extends Component {
 
   render() {
     const { classes, ...rest } = this.props;
-    const { isLogin } = this.props.SessionStore;
+    const { isLogin, userInfo } = this.props.SessionStore;
+    const { isShowProfile, isShowLogout } = this.props.ScreenStore;
     if (!isLogin)
       return <Redirect to="/login" />
     return (
@@ -148,8 +155,48 @@ class App extends Component {
           {this.getRoute() ? <Footer /> : null}
         </div>
         <MusicPlayerDialog />
+        <UserProfileDialog handleClose={this.handleUserProfileClose} data={userInfo} open={isShowProfile} />
+        <AlertDialog
+          open={isShowLogout}
+          handleDisagree={this.handleCloseLogoutDialog}
+          handleAgree={this.handleLogout}
+          handleClose={this.handleCloseLogoutDialog}
+          data={this.state.alertLogout} />
       </div>
     );
+  }
+
+  handleUserProfileClose = () => {
+    this.props.ScreenStore.isShowProfile = false
+  }
+
+  handleCloseLogoutDialog = () => {
+    this.props.ScreenStore.isShowLogout = false
+  }
+
+  handleLogout = () => {
+    fetch(`${this.props.SessionStore.API_URL}user/logout`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+      },
+    }).then((result) => {
+      return result.json();
+    }).then((jsonResult) => {
+      console.log(jsonResult);
+      if (jsonResult.success) {
+        this.props.ScreenStore.isShowLogout = false
+        this.props.SessionStore.logOut()
+      } else {
+        const alert = {
+          title: 'Error',
+          content: `with message ${jsonResult.message}. Please try again later.`
+        }
+        this.setState({ alertLogout: alert })
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
   }
 }
 

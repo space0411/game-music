@@ -138,11 +138,7 @@ class GameScreen extends React.Component {
     isSelected = id => this.state.selected.indexOf(id) !== -1;
 
     handleEditClick = (item) => {
-        const data = {
-            id: item.id,
-            name: item.name
-        }
-        this.alertEdit = { ...this.alertEdit, ...data }
+        this.alertEdit = { ...this.alertEdit, ...item }
         this.openEditAlert = true
     }
 
@@ -168,10 +164,10 @@ class GameScreen extends React.Component {
         this.delete(this.productId)
     }
 
-    handleAgreeEdit = (name, id) => {
-        console.log(name, id)
+    handleAgreeEdit = (item) => {
+        console.log('Edit data', item.name, item.id)
         this.openEditAlert = false
-        this.edit(name, id)
+        this.edit(item.name, item.id)
     }
 
     handleSearch = (searchText) => {

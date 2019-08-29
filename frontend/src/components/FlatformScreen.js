@@ -142,11 +142,7 @@ class FlatformScreen extends React.Component {
     isSelected = id => this.state.selected.indexOf(id) !== -1;
 
     handleEditClick = (item) => {
-        const data = {
-            id: item.id,
-            name: item.name
-        }
-        this.alertEdit = { ...this.alertEdit, ...data }
+        this.alertEdit = { ...this.alertEdit, ...item }
         this.openEditAlert = true
     }
 
@@ -172,10 +168,10 @@ class FlatformScreen extends React.Component {
         this.deleteFlatform(this.productId)
     }
 
-    handleAgreeEdit = (name, id) => {
-        console.log(name, id)
+    handleAgreeEdit = (item) => {
+        console.log('Edit data', item.name, item.id)
         this.openEditAlert = false
-        this.editFlatform(name, id)
+        this.editFlatform(item.name, item.id)
     }
 
     handleSearch = (searchText) => {

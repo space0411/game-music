@@ -38,7 +38,12 @@ class SessionsStore {
     @action
     checkingUserLogin() {
         this.getUserInfo().then(data => {
-            data ? this.isLogin = true : this.isLogin = false
+            if (data) {
+                this.isLogin = true
+                this.userInfo = JSON.parse(data)
+            } else {
+                this.isLogin = false
+            }
         })
     }
 

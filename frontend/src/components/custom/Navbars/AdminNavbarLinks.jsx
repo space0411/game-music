@@ -31,8 +31,8 @@ import Poppers from "@material-ui/core/Popper";
 import Divider from "@material-ui/core/Divider";
 // @material-ui/icons
 import Person from "@material-ui/icons/Person";
-import Notifications from "@material-ui/icons/Notifications";
-import Dashboard from "@material-ui/icons/Dashboard";
+// import Notifications from "@material-ui/icons/Notifications";
+// import Dashboard from "@material-ui/icons/Dashboard";
 import Search from "@material-ui/icons/Search";
 // core components
 import CustomInput from "../CustomInput/CustomInput.jsx";
@@ -40,6 +40,9 @@ import Button from "../CustomButtons/Button.jsx";
 
 import headerLinksStyle from "../../assets/jss/material-dashboard-react/components/headerLinksStyle.jsx";
 
+import { inject } from 'mobx-react';
+
+@inject('ScreenStore')
 class AdminNavbarLinks extends React.Component {
   state = {
     openNotifcation: false,
@@ -63,6 +66,16 @@ class AdminNavbarLinks extends React.Component {
     }
     this.setState({ openProfile: false });
   };
+
+  handleShowProfile = (event) => {
+    this.handleCloseProfile(event)
+    this.props.ScreenStore.isShowProfile = true
+  }
+
+  handleShowLogout = (event) => {
+    this.handleCloseProfile(event)
+    this.props.ScreenStore.isShowLogout = true
+  }
   render() {
     const { classes } = this.props;
     const { openNotifcation, openProfile } = this.state;
@@ -84,7 +97,7 @@ class AdminNavbarLinks extends React.Component {
             <Search />
           </Button>
         </div>
-        <Button
+        {/* <Button
           color={window.innerWidth > 959 ? "transparent" : "white"}
           justIcon={window.innerWidth > 959}
           simple={!(window.innerWidth > 959)}
@@ -176,7 +189,7 @@ class AdminNavbarLinks extends React.Component {
               </Grow>
             )}
           </Poppers>
-        </div>
+        </div> */}
         <div className={classes.manager}>
           <Button
             buttonRef={node => {
@@ -219,20 +232,14 @@ class AdminNavbarLinks extends React.Component {
                   <ClickAwayListener onClickAway={this.handleCloseProfile}>
                     <MenuList role="menu">
                       <MenuItem
-                        onClick={this.handleCloseProfile}
+                        onClick={this.handleShowProfile}
                         className={classes.dropdownItem}
                       >
                         Profile
                       </MenuItem>
-                      <MenuItem
-                        onClick={this.handleCloseProfile}
-                        className={classes.dropdownItem}
-                      >
-                        Settings
-                      </MenuItem>
                       <Divider light />
                       <MenuItem
-                        onClick={this.handleCloseProfile}
+                        onClick={this.handleShowLogout}
                         className={classes.dropdownItem}
                       >
                         Logout

@@ -142,11 +142,7 @@ class DeveloperScreen extends React.Component {
     isSelected = id => this.state.selected.indexOf(id) !== -1;
 
     handleEditClick = (item) => {
-        const data = {
-            id: item.id,
-            name: item.name
-        }
-        this.alertEdit = { ...this.alertEdit, ...data }
+        this.alertEdit = { ...this.alertEdit, ...item }
         this.openEditAlert = true
     }
 
@@ -172,10 +168,10 @@ class DeveloperScreen extends React.Component {
         this.delete(this.productId)
     }
 
-    handleAgreeEdit = (name, id) => {
-        console.log(name, id)
+    handleAgreeEdit = (item) => {
+        console.log('Edit data', item)
         this.openEditAlert = false
-        this.edit(name, id)
+        this.edit(item.name, item.id, item.url)
     }
 
     handleSearch = (searchText) => {
@@ -300,7 +296,7 @@ class DeveloperScreen extends React.Component {
         });
     }
 
-    edit(name, id) {
+    edit(name, id, url) {
         fetch(`${this.props.SessionStore.API_URL}developer/update`, {
             method: 'POST',
             headers: {
@@ -309,7 +305,8 @@ class DeveloperScreen extends React.Component {
             },
             body: JSON.stringify({
                 id: id,
-                name: name
+                name: name,
+                url: url
             })
         }).then((result) => {
             return result.json();

@@ -4,6 +4,8 @@ class ScreenStore {
     @observable title = 'Dashboard'
     @observable isEditEventStage = false
     @observable editEventData
+    @observable isShowProfile = false
+    @observable isShowLogout = false
 
     // Music Player
     @observable isOpenMusicPlayer = false
