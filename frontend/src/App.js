@@ -101,7 +101,9 @@ class App extends Component {
 
   componentDidUpdate(e) {
     if (e.history.location.pathname !== e.location.pathname) {
-      this.mainPanel.current.scrollTop = 0;
+      if (this.mainPanel && this.mainPanel.current) {
+        this.mainPanel.current.scrollTop = 0;
+      }
       if (this.state.mobileOpen) {
         this.setState({ mobileOpen: false });
       }
@@ -187,6 +189,7 @@ class App extends Component {
       if (jsonResult.success) {
         this.props.ScreenStore.isShowLogout = false
         this.props.SessionStore.logOut()
+        window.history.replaceState(null, null, "/login");
       } else {
         const alert = {
           title: 'Error',

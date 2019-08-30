@@ -31,6 +31,7 @@ import GenreScreen from './components/GenreScreen';
 import GameScreen from './components/GameScreen';
 import DeveloperScreen from './components/DeveloperScreen';
 import MusicScreen from './components/MusicScreen';
+import CreateFGGDScreen from "./components/CreateFGGDScreen";
 
 const dashboardRoutes = [
   {
@@ -95,6 +96,14 @@ const dashboardRoutes = [
     rtlName: "قائمة الجدول",
     icon: Games,
     component: GameScreen,
+    layout: "/admin"
+  },
+  {
+    path: "/new-categories",
+    name: "New Categories",
+    rtlName: "قائمة الجدول",
+    icon: Create,
+    component: CreateFGGDScreen,
     layout: "/admin"
   },
   {

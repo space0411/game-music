@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import {
     Button, FormControl, Select, MenuItem, FormHelperText,
     TextField, List, ListItem, ListItemText,
-    ListItemSecondaryAction, Checkbox, FormControlLabel, IconButton
+    ListItemSecondaryAction, Checkbox, FormControlLabel, IconButton, 
 } from '@material-ui/core';
 import DateFnsUtils from '@date-io/date-fns';
 import {
@@ -228,18 +228,6 @@ class CreateProductsScreen extends React.Component {
         this.openAlertFlatformGenre = false
     }
 
-    handleFlatformChange = () => {
-        this.handleCloseCreateFlatformGenre()
-    }
-
-    handleGenreChange = () => {
-        this.handleCloseCreateFlatformGenre()
-    }
-
-    handleChangeAll = () => {
-        this.handleCloseCreateFlatformGenre()
-    }
-
     handleDateChange = (date) => {
         this.selectedDate = date
     }
@@ -261,9 +249,11 @@ class CreateProductsScreen extends React.Component {
     handleOpenUploadMusicDialog = () => {
         this.openUploadMusic = true
     }
+
     handleOpenMusicDialog = () => {
         this.openMusic = true
     }
+
     render() {
         const { classes } = this.props;
         const { getProductImage } = this.props.SessionStore
@@ -271,9 +261,6 @@ class CreateProductsScreen extends React.Component {
             <div>
                 <CreateCategories
                     open={this.openAlertFlatformGenre}
-                    isFlatformChange={this.handleFlatformChange}
-                    isGenreChange={this.handleGenreChange}
-                    isChangeAll={this.handleChangeAll}
                     handleClose={this.handleCloseCreateFlatformGenre} />
                 <MusicDialog
                     open={this.openUploadMusic}

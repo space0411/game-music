@@ -96,8 +96,8 @@ const Sidebar = ({ ...props }) => {
   );
   var brand = (
     <div className={classes.logo} style={{color: 'white'}}>
-      <a
-        href="https://www.creative-tim.com?ref=mdr-sidebar"
+      <div
+        href=""
         className={classNames(classes.logoLink, {
           [classes.logoLinkRTL]: props.rtlActive
         })}
@@ -107,7 +107,7 @@ const Sidebar = ({ ...props }) => {
           <img src={logo} alt="logo" className={classes.img} />
         </div>
         {logoText}
-      </a>
+      </div>
     </div>
   );
   return (
