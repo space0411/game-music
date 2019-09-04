@@ -18,7 +18,7 @@
 // @material-ui/icons
 import Dashboard from "@material-ui/icons/Dashboard";
 import Person from "@material-ui/icons/Person";
-import { RestaurantMenu, QueueMusic, Accessible, DeveloperMode, ScatterPlot, Games, Create } from '@material-ui/icons';
+import { RestaurantMenu, QueueMusic, Accessible, DeveloperMode, ScatterPlot, Games, ViewCarousel, Create } from '@material-ui/icons';
 
 // core components/views for Admin layout
 import DashboardScreen from './components/DashboardScreen';
@@ -32,6 +32,7 @@ import GameScreen from './components/GameScreen';
 import DeveloperScreen from './components/DeveloperScreen';
 import MusicScreen from './components/MusicScreen';
 import CreateFGGDScreen from "./components/CreateFGGDScreen";
+import BannerScreen from "./components/BannerScreen";
 
 const dashboardRoutes = [
   {
@@ -96,6 +97,14 @@ const dashboardRoutes = [
     rtlName: "قائمة الجدول",
     icon: Games,
     component: GameScreen,
+    layout: "/admin"
+  },
+  {
+    path: "/banner",
+    name: "Banner",
+    rtlName: "قائمة الجدول",
+    icon: ViewCarousel,
+    component: BannerScreen,
     layout: "/admin"
   },
   {

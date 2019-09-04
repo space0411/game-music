@@ -480,7 +480,7 @@ class CreateCategories extends React.Component {
                             default: break
                         }
                         return (
-                            <GridItem xs={12} sm={6} md={3}>
+                            <GridItem xs={12} sm={6} md={3} key={indexList}>
                                 <Card>
                                     <CardHeader color="success" stats icon style={{ textAlign: 'left' }}>
                                         <CardIcon color="success">

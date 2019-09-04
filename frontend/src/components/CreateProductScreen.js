@@ -3,15 +3,14 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import {
     Button, FormControl, Select, MenuItem, FormHelperText,
-    TextField, List, ListItem, ListItemText,
-    ListItemSecondaryAction, Checkbox, FormControlLabel, IconButton, 
+    TextField, Checkbox, FormControlLabel, IconButton,
 } from '@material-ui/core';
 import DateFnsUtils from '@date-io/date-fns';
 import {
     MuiPickersUtilsProvider,
     KeyboardDatePicker,
 } from '@material-ui/pickers';
-import { Clear, Delete, QueueMusic, Refresh } from '@material-ui/icons';
+import { Delete, QueueMusic, Refresh } from '@material-ui/icons';
 import { observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import AlertDialog from './dialog/AlertDialog';
@@ -21,6 +20,10 @@ import Moment from 'moment';
 import MusicDialog from './dialog/MusicDialog';
 import MusicManagerDialog from './dialog/MusicManagerDialog';
 
+const ImageType = {
+    COVER: 0,
+    BANNER: 1
+}
 
 @inject('ScreenStore', 'SessionStore')
 @observer
@@ -177,7 +180,7 @@ class CreateProductsScreen extends React.Component {
         this.setState({ [event.target.name]: event.target.value });
     };
 
-    handleFileChange = e => {
+    handleFileCover = e => {
         console.log(e.target.value)
         if (e.target.value) {
             // var value = e.target.value
@@ -190,8 +193,17 @@ class CreateProductsScreen extends React.Component {
             //     self.files.push({ 'name': value, 'file': resizedDataUrl })
             //     self.files = self.files.slice()
             // });
-            self.files.push({ 'name': files[0].name, 'file': files[0] })
+            self.files.push({ 'name': files[0].name, 'file': files[0], 'type': ImageType.COVER })
             self.files = self.files.slice()
+        }
+    }
+
+    handleFileBanner = e => {
+        console.log(e.target.value)
+        if (e.target.value) {
+            var files = e.target.files
+            this.files.push({ 'name': files[0].name, 'file': files[0], 'type': ImageType.BANNER })
+            this.files = this.files.slice()
         }
     }
 
@@ -312,7 +324,6 @@ class CreateProductsScreen extends React.Component {
                 </FormControl>
                 <IconButton variant="contained" className={classes.button} onClick={this.handleRefeshCateClick} color="primary"><Refresh className={classes.rightIcon} /></IconButton>
                 {this.isEditProductMode && <div style={{ marginLeft: 6 }}>Selected:<h6>{this.prevCate}</h6></div>}
-                <br></br>
                 <FormControlLabel
                     control={
                         <Checkbox
@@ -325,7 +336,7 @@ class CreateProductsScreen extends React.Component {
                         />
                     }
                     label="Publish"
-                    style={{ marginLeft: 1 }}
+                    style={{ marginLeft: 1, marginTop: 5 }}
                 />
                 <br></br>
                 <TextField
@@ -363,23 +374,39 @@ class CreateProductsScreen extends React.Component {
                         }}
                     />
                 </MuiPickersUtilsProvider>
+                <h5>Product cover 4x4</h5>
                 <input
                     accept="image/*"
                     className={classes.input}
-                    id="contained-button-file"
+                    id="contained-button-file-cover"
                     multiple
                     type="file"
-                    onChange={this.handleFileChange}
+                    onChange={this.handleFileCover}
                 />
                 <br></br>
-                <label htmlFor="contained-button-file">
+                <label htmlFor="contained-button-file-cover">
+                    <Button variant="contained" component="span" className={classes.button}>
+                        Select image
+                    </Button>
+                </label>
+                <h5>Product banner 8x4</h5>
+                <input
+                    accept="image/*"
+                    className={classes.input}
+                    id="contained-button-file-banner"
+                    multiple
+                    type="file"
+                    onChange={this.handleFileBanner}
+                />
+                <br></br>
+                <label htmlFor="contained-button-file-banner">
                     <Button variant="contained" component="span" className={classes.button}>
                         Select image
                     </Button>
                 </label>
                 {this.isEditProductMode &&
                     <div>Live image:
-                    <div style={{ display: 'flex' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                             {this.filesLive.map((item, index) => (
                                 <div key={index} style={{ textAlign: 'center' }}>
                                     <div style={{
@@ -396,19 +423,38 @@ class CreateProductsScreen extends React.Component {
                                 </div>
                             ))}
                         </div>
-                    </div>}
+                    </div>
+                }
                 <br></br>
                 <h5>Local image:</h5>
-                <List dense className={classes.rootImageList}>
+                <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                    {this.files.map((item, index) => (
+                        <div key={index} style={{ textAlign: 'center' }}>
+                            <div style={{
+                                backgroundImage: `url(${URL.createObjectURL(item.file)})`,
+                                width: item.type === ImageType.BANNER ? 400 : 200,
+                                height: 200,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'center',
+                                positions: 'relative'
+                            }} />
+                            <div>{item.type === ImageType.BANNER ? 'Banner' : 'Cover'}</div>
+                            <IconButton className={classes.button} aria-label="delete" onClick={() => this.handleFileDelete(index)}>
+                                <Delete />
+                            </IconButton>
+                        </div>
+                    ))}
+                </div>
+                {/* <List dense className={classes.rootImageList}>
                     {this.files.map((item, index) => (
                         <ListItem key={index} button>
-                            <ListItemText primary={item.name} />
+                            <ListItemText primary={item.name} secondary={`Type: ${item.type === ImageType.BANNER ? 'Banner': 'Cover'}`} />
                             <ListItemSecondaryAction>
                                 <Clear onClick={() => this.handleFileDelete(index)} />
                             </ListItemSecondaryAction>
                         </ListItem>
                     ))}
-                </List>
+                </List> */}
                 <br></br>
                 <h5>Short Detail</h5>
                 <CKEditor
@@ -429,7 +475,7 @@ class CreateProductsScreen extends React.Component {
                     color="primary">
                     Submit
                 </Button>
-            </div>
+            </div >
         );
     }
     componentDidMount() {
