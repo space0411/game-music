@@ -145,11 +145,13 @@ class CreateProductsScreen extends React.Component {
     }
 
     uploadImage = (productid) => {
+        var types = []
         var data = new FormData()
         this.files.forEach(item => {
             data.append('image', item.file)
+            types.push(item.type)
         })
-        fetch(`${this.props.SessionStore.API_URL}product/image?id=${productid}&size=${this.files.length}`, {
+        fetch(`${this.props.SessionStore.API_URL}product/image?id=${productid}&types=${JSON.stringify(types)}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
@@ -406,55 +408,16 @@ class CreateProductsScreen extends React.Component {
                 </label>
                 {this.isEditProductMode &&
                     <div>Live image:
-                    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                            {this.filesLive.map((item, index) => (
-                                <div key={index} style={{ textAlign: 'center' }}>
-                                    <div style={{
-                                        backgroundImage: `url(${getProductImage(item.url)})`,
-                                        width: 200,
-                                        height: 200,
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'center',
-                                        positions: 'relative'
-                                    }} />
-                                    <IconButton className={classes.button} aria-label="delete" onClick={() => this.handleRemoveLiveImage(item)}>
-                                        <Delete />
-                                    </IconButton>
-                                </div>
-                            ))}
-                        </div>
+                        {
+                            this.ImageGallery(classes, this.filesLive, this.handleRemoveLiveImage, getProductImage)
+                        }
                     </div>
                 }
                 <br></br>
                 <h5>Local image:</h5>
-                <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                    {this.files.map((item, index) => (
-                        <div key={index} style={{ textAlign: 'center' }}>
-                            <div style={{
-                                backgroundImage: `url(${URL.createObjectURL(item.file)})`,
-                                width: item.type === ImageType.BANNER ? 400 : 200,
-                                height: 200,
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'center',
-                                positions: 'relative'
-                            }} />
-                            <div>{item.type === ImageType.BANNER ? 'Banner' : 'Cover'}</div>
-                            <IconButton className={classes.button} aria-label="delete" onClick={() => this.handleFileDelete(index)}>
-                                <Delete />
-                            </IconButton>
-                        </div>
-                    ))}
-                </div>
-                {/* <List dense className={classes.rootImageList}>
-                    {this.files.map((item, index) => (
-                        <ListItem key={index} button>
-                            <ListItemText primary={item.name} secondary={`Type: ${item.type === ImageType.BANNER ? 'Banner': 'Cover'}`} />
-                            <ListItemSecondaryAction>
-                                <Clear onClick={() => this.handleFileDelete(index)} />
-                            </ListItemSecondaryAction>
-                        </ListItem>
-                    ))}
-                </List> */}
+                {
+                    this.ImageGallery(classes, this.files, this.handleFileDelete, undefined)
+                }
                 <br></br>
                 <h5>Short Detail</h5>
                 <CKEditor
@@ -478,6 +441,30 @@ class CreateProductsScreen extends React.Component {
             </div >
         );
     }
+
+    ImageGallery = (classes, files, onClickHandle, getProductImage) => {
+        return (
+            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                {files.map((item, index) => (
+                    <div key={index} style={{ textAlign: 'center' }}>
+                        <div style={{
+                            backgroundImage: getProductImage ? `url(${getProductImage(item.url)})` : `url(${URL.createObjectURL(item.file)})`,
+                            width: item.type === ImageType.BANNER ? 400 : 200,
+                            height: 200,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'center',
+                            positions: 'relative'
+                        }} />
+                        <div>{item.type === ImageType.BANNER ? 'Banner' : 'Cover'}</div>
+                        <IconButton className={classes.button} aria-label="delete" onClick={() => getProductImage ? onClickHandle(item) : onClickHandle(index)}>
+                            <Delete />
+                        </IconButton>
+                    </div>
+                ))}
+            </div>
+        )
+    }
+
     componentDidMount() {
         if (this.props.ScreenStore.isEditEventStage) {
             this.productData = this.props.ScreenStore.editEventData

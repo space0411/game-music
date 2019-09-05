@@ -9,8 +9,6 @@ import {
 } from '@material-ui/core';
 import { green } from '@material-ui/core/colors';
 import { Delete, Edit } from '@material-ui/icons';
-import { Redirect } from "react-router-dom";
-import Moment from 'react-moment';
 
 import EnhancedTableHead from './table/EnhancedTableHead';
 import EnhancedTableToolbar from './table/EnhancedTableToolbar';
@@ -69,6 +67,9 @@ const styles = theme => ({
     input: {
         display: 'none',
     },
+    option: {
+        display: 'flex', flexDirection: 'row', justifyContent: 'flex-end'
+    }
 });
 
 
@@ -85,6 +86,7 @@ class BannerScreen extends React.Component {
     }
     @observable isCreateProduct = false
     @observable openCreate = false
+    @observable selectedItem = undefined
 
     constructor(props) {
         super(props);
@@ -150,7 +152,8 @@ class BannerScreen extends React.Component {
     isSelected = id => this.state.selected.indexOf(id) !== -1;
 
     handleEditClick = (item) => {
-        this.props.ScreenStore.setEditEventStage(item)
+        this.selectedItem = item
+        this.openCreate = true
     }
 
     handleDeleteClick = (item) => {
@@ -179,13 +182,21 @@ class BannerScreen extends React.Component {
     }
 
     handleCreateBanner = () => {
+        this.selectedItem = undefined
         this.openCreate = true
     }
 
-    render() {
-        if (this.props.ScreenStore.isEditEventStage || this.isCreateProduct) {
-            return <Redirect to='new-edit-product' />
+    handleCloseCreateBanner = () => {
+        this.openCreate = false
+    }
+
+    handleAddNewRow = (data) => {
+        if (data) {
+            this.data = [...this.data, data]
         }
+    }
+
+    render() {
         const { classes } = this.props;
         const data = this.data;
         const { order, orderBy, selected, rowsPerPage, page } = this.state;
@@ -193,17 +204,17 @@ class BannerScreen extends React.Component {
 
         return (
             <Paper className={classes.root}>
-                <CreateBannerDialog open={this.openCreate} />
+                <CreateBannerDialog open={this.openCreate} data={this.selectedItem} handleClose={this.handleCloseCreateBanner} handleAddNewRow={this.handleAddNewRow} />
                 <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
                 <EnhancedTableToolbar
                     numSelected={selected.length}
                     toolbarName={this.screenName}
-                    handleSearch={this.handleSearch} 
+                    handleSearch={this.handleSearch}
                     handleCreate={this.handleCreateBanner} />
                 <div className={classes.tableWrapper}>
                     <Table className={classes.table} aria-labelledby="tableTitle">
                         <EnhancedTableHead
-                            headStyle={HeadStyle.Product}
+                            headStyle={HeadStyle.Banner}
                             numSelected={selected.length}
                             order={order}
                             orderBy={orderBy}
@@ -216,6 +227,9 @@ class BannerScreen extends React.Component {
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map(n => {
                                     const isSelected = this.isSelected(n.id);
+                                    let productName = ''
+                                    if (n.products && n.products.length > 0)
+                                        productName = n.products[0].name
                                     return (
                                         <TableRow
                                             hover
@@ -231,16 +245,14 @@ class BannerScreen extends React.Component {
                                             </TableCell>
                                             <TableCell component="th" scope="row" padding="none">{n.id}</TableCell>
                                             <TableCell component="th" scope="row" padding="none">
-                                                {n.name}
+                                                {n.title}
                                             </TableCell>
-                                            <TableCell align="right">{n.idGame}</TableCell>
-                                            <TableCell align="right"><Moment format="D MMM YYYY" unix>{n.releaseDate}</Moment></TableCell>
-                                            <TableCell align="right">{n.createdBy}</TableCell>
-                                            <TableCell align="right">{n.numberOfFile}</TableCell>
-                                            <TableCell align="right">{n.view}</TableCell>
+                                            <TableCell align="right">{n.content}</TableCell>
+                                            <TableCell align="right">{n.idProduct}</TableCell>
+                                            <TableCell align="right">{productName}</TableCell>
                                             <TableCell padding="checkbox"><GreenCheckbox checked={n.publish} /></TableCell>
                                             <TableCell align="right">
-                                                <div className="d-flex flex-row">
+                                                <div className={classes.option}>
                                                     <IconButton onClick={() => this.handleEditClick(n)} color="primary" className={classes.button} aria-label="Edit">
                                                         <Edit />
                                                     </IconButton>
@@ -291,7 +303,7 @@ class BannerScreen extends React.Component {
         }
         if (!searchText)
             delete data.searchName
-        fetch(`${this.props.SessionStore.API_URL}product/read`, {
+        fetch(`${this.props.SessionStore.API_URL}banner/read`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -310,23 +322,23 @@ class BannerScreen extends React.Component {
         });
     }
 
-    deleteProducts(productId) {
-        fetch(`${this.props.SessionStore.API_URL}product/delete`, {
+    deleteProducts(id) {
+        fetch(`${this.props.SessionStore.API_URL}banner/delete`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
             },
             body: JSON.stringify({
-                id: productId
+                id: id
             })
         }).then((result) => {
             return result.json();
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.data = this.data.filter(item => item.id !== productId)
-                this.handleClick(undefined, productId)
+                this.data = this.data.filter(item => item.id !== id)
+                this.handleClick(undefined, id)
             }
         }).catch((error) => {
             console.error(error);

@@ -56,6 +56,16 @@ const rowsUser = [
     { id: 'options', numeric: true, disablePadding: false, label: '' },
 ];
 
+const rowsBanner = [
+    { id: 'id', numeric: false, disablePadding: true, label: 'ID' },
+    { id: 'title', numeric: false, disablePadding: true, label: 'Title' },
+    { id: 'content', numeric: true, disablePadding: false, label: 'Content' },
+    { id: 'idProduct', numeric: true, disablePadding: false, label: 'idProduct' },
+    { id: 'name', numeric: true, disablePadding: false, label: 'Product name' },
+    { id: 'publish', numeric: false, disablePadding: false, label: 'Publish' },
+    { id: 'options', numeric: true, disablePadding: false, label: '' },
+];
+
 export default class EnhancedTableHead extends React.Component {
     createSortHandler = property => event => {
         this.props.onRequestSort(event, property);
@@ -78,6 +88,8 @@ export default class EnhancedTableHead extends React.Component {
             case HeadStyle.Developer: this.rows = [...rowsDeveloper]
                 break
             case HeadStyle.Music: this.rows = [...rowsMusic]
+                break
+            case HeadStyle.Banner: this.rows = [...rowsBanner]
                 break
             default: break
         }

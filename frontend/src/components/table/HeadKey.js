@@ -10,6 +10,7 @@ export const HeadStyle = {
     Developer: 4,
     Music: 5,
     User: 6,
+    Banner: 7
 }
 
 function HeadKey() { }

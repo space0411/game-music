@@ -1,5 +1,9 @@
 import React from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core';
+import {
+    Button, Dialog, DialogActions, DialogContent,
+    DialogContentText, DialogTitle, TextField,
+    FormControlLabel, Checkbox
+} from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import InputBase from '@material-ui/core/InputBase';
@@ -19,7 +23,34 @@ class CreateBannerDialog extends React.Component {
     @observable title = ''
     @observable content = ''
     @observable selectedProductId = ''
+    @observable isPublish = false
     @observable openSelect = false
+    @observable message = ''
+    @observable bannerData
+    @observable isEditMode = false
+
+    componentWillReceiveProps(nextProps) {
+        const data = nextProps.data
+        if (data) {
+            this.bannerData = data
+            this.isEditMode = true
+            this.title = data.title
+            this.content = data.content
+            this.selectedProductId = data.products[0].id
+            this.products = data.products
+            this.isPublish = data.publish
+            this.message = `Edit banner with ID - ${data.id}`
+        } else {
+            this.bannerData = undefined
+            this.isEditMode = false
+            this.title = ''
+            this.content = ''
+            this.selectedProductId = ''
+            this.products = []
+            this.isPublish = false
+            this.message = ''
+        }
+    }
 
     handleChangeTitle = (e) => {
         this.title = e.target.value
@@ -29,12 +60,66 @@ class CreateBannerDialog extends React.Component {
         this.content = e.target.value
     }
 
-    handleApplyChange = (data) => {
-        if (data.name.length < 1) {
+    handleCreateBanner = () => {
+        if (this.title.length === 0 || this.content.length === 0 || this.selectedProductId === '') {
+            this.message = 'Please fill all information'
             return
         }
-        this.props.handleAgree(data)
-        this.setState({ name: '', url: '' })
+        const data = {
+            idProduct: this.selectedProductId,
+            title: this.title,
+            content: this.content,
+            publish: this.isPublish
+        }
+        console.log('Create Banner with data:', this.title, this.content, this.selectedProductId)
+        fetch(`${this.props.SessionStore.API_URL}banner/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: JSON.stringify(data)
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                this.props.handleAddNewRow(jsonResult.data)
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    handleEditBanner = () => {
+        if (this.title.length === 0 || this.content.length === 0 || this.selectedProductId === '') {
+            this.message = 'Please fill all information'
+            return
+        }
+        const data = {
+            id: this.bannerData.id,
+            idProduct: this.selectedProductId,
+            title: this.title,
+            content: this.content,
+            publish: this.isPublish
+        }
+        console.log('Edit Banner with data:', this.title, this.content, this.selectedProductId)
+        fetch(`${this.props.SessionStore.API_URL}banner/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: JSON.stringify(data)
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
     }
 
     handleSearch = (e) => {
@@ -57,8 +142,12 @@ class CreateBannerDialog extends React.Component {
         this.openSelect = true
     }
 
+    handlePublishChange = () => {
+        this.isPublish = !this.isPublish
+    }
+
     render() {
-        const { classes, handleClose, data, open } = this.props
+        const { classes, handleClose, open } = this.props
         return (
             <Dialog
                 open={open}
@@ -68,7 +157,7 @@ class CreateBannerDialog extends React.Component {
                 <DialogTitle id="alert-dialog-title">Create Banner</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-
+                        {this.message}
                     </DialogContentText>
                     <TextField
                         required
@@ -116,10 +205,24 @@ class CreateBannerDialog extends React.Component {
                             }
                         </Select>
                     </FormControl>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={this.isPublish}
+                                onChange={this.handlePublishChange}
+                                value="Publish"
+                                inputProps={{
+                                    'aria-label': 'primary checkbox',
+                                }}
+                            />
+                        }
+                        label="Publish"
+                        style={{ marginLeft: 1, marginTop: 5 }}
+                    />
                 </DialogContent>
                 <DialogActions>
                     <div>
-                        <Button onClick={() => this.handleApplyChange(data)} color="primary">Apply</Button>
+                        <Button onClick={this.isEditMode ? this.handleEditBanner : this.handleCreateBanner} color="primary">Submit</Button>
                         <Button onClick={handleClose} color="primary" autoFocus>Close</Button>
                     </div>
                 </DialogActions>
@@ -160,7 +263,7 @@ const styles = theme => ({
     textField: {
         marginLeft: theme.spacing(1),
         marginRight: theme.spacing(1),
-        width: 400,
+        width: 350,
     },
     search: {
         position: 'relative',
@@ -171,7 +274,7 @@ const styles = theme => ({
         },
         marginTop: 10,
         marginLeft: 0,
-        width: '100%',
+        width: '80%',
         [theme.breakpoints.up('sm')]: {
             marginLeft: theme.spacing(1),
             width: 'auto',
