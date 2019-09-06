@@ -196,6 +196,10 @@ class BannerScreen extends React.Component {
         }
     }
 
+    handleChangePublish = (data) => {
+        this.updatePublishProducts(data)
+    }
+
     render() {
         const { classes } = this.props;
         const data = this.data;
@@ -228,8 +232,8 @@ class BannerScreen extends React.Component {
                                 .map(n => {
                                     const isSelected = this.isSelected(n.id);
                                     let productName = ''
-                                    if (n.products && n.products.length > 0)
-                                        productName = n.products[0].name
+                                    if (n.products)
+                                        productName = n.products.name
                                     return (
                                         <TableRow
                                             hover
@@ -250,7 +254,7 @@ class BannerScreen extends React.Component {
                                             <TableCell align="right">{n.content}</TableCell>
                                             <TableCell align="right">{n.idProduct}</TableCell>
                                             <TableCell align="right">{productName}</TableCell>
-                                            <TableCell padding="checkbox"><GreenCheckbox checked={n.publish} /></TableCell>
+                                            <TableCell padding="checkbox"><GreenCheckbox onClick={() => this.handleChangePublish(n)} checked={n.publish} /></TableCell>
                                             <TableCell align="right">
                                                 <div className={classes.option}>
                                                     <IconButton onClick={() => this.handleEditClick(n)} color="primary" className={classes.button} aria-label="Edit">
@@ -316,6 +320,35 @@ class BannerScreen extends React.Component {
             console.log(jsonResult);
             if (jsonResult.success) {
                 this.data = jsonResult.data.list
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    updatePublishProducts = (value) => {
+        const data = {
+            id: value.id,
+            publish: !value.publish
+        }
+        fetch(`${this.props.SessionStore.API_URL}banner/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: JSON.stringify(data)
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                this.data = this.data.map(item => {
+                    if (item.id === value.id) {
+                        item.publish = !item.publish
+                    }
+                    return item
+                })
             }
         }).catch((error) => {
             console.error(error);

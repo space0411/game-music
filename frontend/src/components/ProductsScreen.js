@@ -175,9 +175,15 @@ class ProductsScreen extends React.Component {
         if (searchText.length === 0)
             this.getProducts()
     }
+
     handleCreateProduct = () => {
         this.isCreateProduct = true
     }
+
+    handleChangePublish = (data) => {
+        this.updatePublishProducts(data)
+    }
+
     render() {
         if (this.props.ScreenStore.isEditEventStage || this.isCreateProduct) {
             return <Redirect to='new-edit-product' />
@@ -229,7 +235,7 @@ class ProductsScreen extends React.Component {
                                             <TableCell align="right">{n.createdBy}</TableCell>
                                             <TableCell align="right">{n.numberOfFile}</TableCell>
                                             <TableCell align="right">{n.view}</TableCell>
-                                            <TableCell padding="checkbox"><GreenCheckbox checked={n.publish} /></TableCell>
+                                            <TableCell padding="checkbox"><GreenCheckbox onClick={() => this.handleChangePublish(n)} checked={n.publish} /></TableCell>
                                             <TableCell align="right">
                                                 <div className="d-flex flex-row">
                                                     <IconButton onClick={() => this.handleEditClick(n)} color="primary" className={classes.button} aria-label="Edit">
@@ -295,6 +301,35 @@ class ProductsScreen extends React.Component {
             console.log(jsonResult);
             if (jsonResult.success) {
                 this.data = jsonResult.data.list
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    updatePublishProducts = (value) => {
+        const data = {
+            id: value.id,
+            publish: !value.publish
+        }
+        fetch(`${this.props.SessionStore.API_URL}product/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: JSON.stringify(data)
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                this.data = this.data.map(item => {
+                    if (item.id === value.id) {
+                        item.publish = !item.publish
+                    }
+                    return item
+                })
             }
         }).catch((error) => {
             console.error(error);

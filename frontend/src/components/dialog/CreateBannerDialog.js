@@ -36,8 +36,9 @@ class CreateBannerDialog extends React.Component {
             this.isEditMode = true
             this.title = data.title
             this.content = data.content
-            this.selectedProductId = data.products[0].id
-            this.products = data.products
+            this.selectedProductId = data.products.id
+            this.products = []
+            this.products = [...this.products, data.products]
             this.isPublish = data.publish
             this.message = `Edit banner with ID - ${data.id}`
         } else {
@@ -126,8 +127,6 @@ class CreateBannerDialog extends React.Component {
         const searchText = e.target.value
         if (searchText.length > 3)
             this.getProducts(searchText)
-        if (searchText.length === 0)
-            this.getProducts()
     }
 
     handleChangeProduct = (event) => {
@@ -159,20 +158,6 @@ class CreateBannerDialog extends React.Component {
                     <DialogContentText id="alert-dialog-description">
                         {this.message}
                     </DialogContentText>
-                    <TextField
-                        required
-                        label='Title'
-                        className={classes.textField}
-                        value={this.title}
-                        onChange={this.handleChangeTitle}
-                        margin="normal" />
-                    <TextField
-                        required
-                        label='Content'
-                        className={classes.textField}
-                        value={this.content}
-                        onChange={this.handleChangeContent}
-                        margin="normal" />
                     <div className={classes.search}>
                         <div className={classes.searchIcon}>
                             <SearchIcon />
@@ -205,6 +190,20 @@ class CreateBannerDialog extends React.Component {
                             }
                         </Select>
                     </FormControl>
+                    <TextField
+                        required
+                        label='Title'
+                        className={classes.textField}
+                        value={this.title}
+                        onChange={this.handleChangeTitle}
+                        margin="normal" />
+                    <TextField
+                        required
+                        label='Content'
+                        className={classes.textField}
+                        value={this.content}
+                        onChange={this.handleChangeContent}
+                        margin="normal" />
                     <FormControlLabel
                         control={
                             <Checkbox
