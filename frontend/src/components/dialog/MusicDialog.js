@@ -26,6 +26,10 @@ const useStyles = theme => ({
     marginRight: theme.spacing(1),
     width: 300,
   },
+  textFieldTime: {
+    marginRight: theme.spacing(1),
+    width: 100,
+  },
   item: {
 
   }
@@ -73,7 +77,8 @@ class MusicDialog extends React.Component {
 
   handleMusicFileChange = (files) => {
     const myMusics = [...this.musics, ...files]
-    this.musics = myMusics.map((value, index) => value.id ? value : Object.assign(value, { id: `item-${index}` }))
+    this.musics = myMusics.map((value, index) => value.id ? value :
+      Object.assign(value, { id: `item-${index}`, duration: 0, hour: 0, minute: 0, second: 0 }))
     console.log(this.musics)
   }
 
@@ -84,6 +89,44 @@ class MusicDialog extends React.Component {
   handleTitleChange = (event, myindex) => {
     this.musics = this.musics.map((value, index) => index === myindex ? Object.assign(value, { title: event.target.value }) : value)
     resetServerContext()
+  }
+
+  handleDurationChange = (event, myindex, type) => {
+    const text = Math.floor(event.target.value)
+    switch (type) {
+      case 'h':
+        this.musics = this.musics.map((value, index) => index === myindex ?
+          Object.assign(value, { duration: this.caculateTime(text, value.minute, value.second), hour: text }) : value)
+        break
+      case 'm':
+        this.musics = this.musics.map((value, index) => index === myindex ?
+          Object.assign(value, { duration: this.caculateTime(value.hour, text, value.second), minute: text }) : value)
+        break
+      case 's':
+        this.musics = this.musics.map((value, index) => index === myindex ?
+          Object.assign(value, { duration: this.caculateTime(value.hour, value.minute, text), second: text }) : value)
+        break
+      default: break
+    }
+
+    resetServerContext()
+  }
+
+  caculateTime(h, m, s) {
+    return (h * 3600 + m * 60 + s) * 1000
+  }
+
+  msToHMS(ms) {
+    // 1- Convert to seconds:
+    var seconds = ms / 1000;
+    // 2- Extract hours:
+    var hours = parseInt(seconds / 3600); // 3,600 seconds in 1 hour
+    seconds = seconds % 3600; // seconds remaining after extracting hours
+    // 3- Extract minutes:
+    var minutes = parseInt(seconds / 60); // 60 seconds in 1 minute
+    // 4- Keep only seconds not extracted to minutes:
+    seconds = seconds % 60;
+    return (hours + ":" + minutes + ":" + seconds);
   }
 
   onDragEnd = (result) => {
@@ -109,7 +152,7 @@ class MusicDialog extends React.Component {
       var musicData = []
       this.musics.forEach(file => {
         data.append('file', file)
-        musicData.push({ name: file.title })
+        musicData.push({ name: file.title, duration: file.duration })
       })
       console.log(musicData)
       if (musicData.length > 0)
@@ -189,7 +232,34 @@ class MusicDialog extends React.Component {
                                       value={item.title || ''}
                                       onChange={event => this.handleTitleChange(event, index)}
                                       margin="normal" />
+                                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                      <TextField
+                                        required
+                                        type="number"
+                                        label="Hour"
+                                        className={classes.textFieldTime}
+                                        value={item.hour || ''}
+                                        onChange={event => this.handleDurationChange(event, index, 'h')}
+                                        margin="normal" />
+                                      <TextField
+                                        required
+                                        type="number"
+                                        label="Minute"
+                                        className={classes.textFieldTime}
+                                        value={item.minute || ''}
+                                        onChange={event => this.handleDurationChange(event, index, 'm')}
+                                        margin="normal" />
+                                      <TextField
+                                        required
+                                        type="number"
+                                        label="Second"
+                                        className={classes.textFieldTime}
+                                        value={item.second || ''}
+                                        onChange={event => this.handleDurationChange(event, index, 's')}
+                                        margin="normal" />
+                                    </div>
                                     <ListItemText primary={item.name} secondary={`Size: ${item.size}`} />
+                                    <ListItemText primary={`Duration: ${this.msToHMS(item.duration)}`} secondary={`${item.duration} milis`} />
                                   </div>
                                 </ListItem>
                                 <Divider />

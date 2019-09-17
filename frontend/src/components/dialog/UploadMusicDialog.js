@@ -72,7 +72,7 @@ class UploadMusicDialog extends React.Component {
                                 onChange={this.handleFileChange}
                             />
                             <label style={{ marginTop: 60, marginLeft: 75 }} htmlFor="contained-button-file-music-upload">
-                                <Button variant="contained" component="span" className={classes.button}>Select image</Button>
+                                <Button variant="contained" component="span" className={classes.button}>Select music</Button>
                             </label>
                         </div>
                     </DialogContent>
