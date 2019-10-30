@@ -76,6 +76,7 @@ const styles = theme => ({
 class ProductsScreen extends React.Component {
     screenName = 'Products'
     @observable data = []
+    @observable totalRows = 0
     @observable openAlert = false
     @observable productId
     @observable alert = {
@@ -139,6 +140,9 @@ class ProductsScreen extends React.Component {
 
     handleChangePage = (event, page) => {
         this.setState({ page });
+        if (this.totalRows > this.data.length) {
+            this.getProducts(undefined, page)
+        }
     };
 
     handleChangeRowsPerPage = event => {
@@ -191,7 +195,7 @@ class ProductsScreen extends React.Component {
         const { classes } = this.props;
         const data = this.data;
         const { order, orderBy, selected, rowsPerPage, page } = this.state;
-        const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+        const emptyRows = rowsPerPage - Math.min(rowsPerPage, this.totalRows - page * rowsPerPage);
 
         return (
             <Paper className={classes.root}>
@@ -260,7 +264,7 @@ class ProductsScreen extends React.Component {
                 <TablePagination
                     rowsPerPageOptions={[10, 20, 40]}
                     component="div"
-                    count={data.length}
+                    count={this.totalRows}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     backIconButtonProps={{
@@ -280,10 +284,10 @@ class ProductsScreen extends React.Component {
         this.getProducts()
     }
 
-    getProducts(searchText) {
+    getProducts(searchText, page) {
         const data = {
-            page: this.active,
-            rowsOnPage: 20,
+            page: page + 1,
+            rowsOnPage: this.state.rowsPerPage,
             searchName: searchText
         }
         if (!searchText)
@@ -300,7 +304,8 @@ class ProductsScreen extends React.Component {
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.data = jsonResult.data.list
+                this.data = [...this.data, ...jsonResult.data.list]
+                this.totalRows = jsonResult.data.totalRows
             }
         }).catch((error) => {
             console.error(error);

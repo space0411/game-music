@@ -16,7 +16,7 @@ import SearchIcon from '@material-ui/icons/Search';
 
 class EnhancedTableToolbar extends React.Component {
     render() {
-        const { numSelected, classes, toolbarName, handleSearch, handlePlayMusic, handleCreate } = this.props;
+        const { numSelected, classes, toolbarName, handleSearch, handlePlayMusic, handleCreate, handleDeleteMultiItem } = this.props;
         return (
             <Toolbar
                 className={classNames(classes.root, {
@@ -37,18 +37,23 @@ class EnhancedTableToolbar extends React.Component {
                 <div className={classes.spacer} />
                 <div className={classes.actions}>
                     {handlePlayMusic &&
-                        <Tooltip title="Play list">
-                            <IconButton onClick={handlePlayMusic} className={classes.icon} aria-label="Play list">
+                        <Tooltip title="Playlist">
+                            <IconButton onClick={handlePlayMusic} className={classes.icon} aria-label="Playlist">
                                 <PlayIcon />
                             </IconButton>
                         </Tooltip>
                     }
                     {numSelected > 0 ? (
-                        <Tooltip title="Delete">
-                            <IconButton aria-label="Delete">
-                                <DeleteIcon />
-                            </IconButton>
-                        </Tooltip>
+                        <div>
+                            {
+                                handleDeleteMultiItem &&
+                                <Tooltip title="Delete">
+                                    <IconButton onClick={handleDeleteMultiItem} aria-label="Delete">
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            }
+                        </div>
                     ) : (
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                 {handleCreate &&

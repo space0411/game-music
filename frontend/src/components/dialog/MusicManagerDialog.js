@@ -23,6 +23,7 @@ import EnhancedTableToolbar from '../table/EnhancedTableToolbar';
 import AlertDialog from './AlertDialog';
 import EditDialog from './EditDialog';
 import { HeadStyle } from '../table/HeadKey';
+import EditMusicDialog from './EditMusicDialog';
 
 
 function desc(a, b, orderBy) {
@@ -299,11 +300,7 @@ class MusicManagerDialog extends React.Component {
     isSelected = id => this.state.selected.indexOf(id) !== -1;
 
     handleEditClick = (item) => {
-        const data = {
-            id: item.id,
-            name: item.name
-        }
-        this.alertEdit = { ...this.alertEdit, ...data }
+        this.alertEdit = { ...this.alertEdit, ...item }
         this.openEditAlert = true
     }
 
@@ -329,10 +326,10 @@ class MusicManagerDialog extends React.Component {
         this.deleteMusic(this.productId)
     }
 
-    handleAgreeEdit = (name, id) => {
-        console.log(name, id)
+    handleAgreeEdit = (item) => {
+        console.log('Edit data', item.name, item.id)
         this.openEditAlert = false
-        this.editMusic(name, id)
+        this.editMusic(item)
     }
 
     handlePlayMusic = () => {
@@ -381,23 +378,20 @@ class MusicManagerDialog extends React.Component {
             });
     }
 
-    editMusic(name, id) {
+    editMusic(item) {
         fetch(`${this.props.SessionStore.API_URL}music/update`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
             },
-            body: JSON.stringify({
-                id: id,
-                name: name
-            })
+            body: JSON.stringify(item)
         }).then((result) => {
             return result.json();
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.data = this.data.map(value => value.id === id ? jsonResult.data : value)
+                this.data = this.data.map(value => value.id === item.id ? jsonResult.data : value)
             }
         }).catch((error) => {
             console.error(error);
@@ -454,7 +448,7 @@ class MusicManagerDialog extends React.Component {
                     <div style={{ padding: 24 }}>
                         <Paper className={classes.root}>
                             <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
-                            <EditDialog handleClose={this.handleEditAlertClose} handleAgree={this.handleAgreeEdit} data={this.alertEdit} open={this.openEditAlert} />
+                            <EditMusicDialog handleClose={this.handleEditAlertClose} handleAgree={this.handleAgreeEdit} data={this.alertEdit} open={this.openEditAlert} />
                             <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} handleSearch={this.handleSearch} />
                             <div className={classes.tableWrapper}>
                                 <Table className={classes.table} aria-labelledby="tableTitle">

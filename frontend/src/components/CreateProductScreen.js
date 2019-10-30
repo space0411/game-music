@@ -19,6 +19,7 @@ import CreateCategories from './CreateCategories';
 import Moment from 'moment';
 import MusicDialog from './dialog/MusicDialog';
 import MusicManagerDialog from './dialog/MusicManagerDialog';
+import Title from './custom/Title';
 
 const ImageType = {
     COVER: 0,
@@ -296,7 +297,7 @@ class CreateProductsScreen extends React.Component {
                     handleAgree={this.handleRemoveImage}
                     handleClose={this.handleClose}
                     data={this.alertRemoveImage} />
-                <h5>Product information</h5>
+                <Title text='Product information' />
                 <Button variant="contained" className={classes.button} onClick={this.handleNewFlatformGenre} color="primary">New Flatform & Genre</Button>
                 <Button variant="contained" className={classes.button} onClick={this.handleOpenUploadMusicDialog} color="secondary">
                     Upload Music<QueueMusic className={classes.rightIcon} />
@@ -344,10 +345,11 @@ class CreateProductsScreen extends React.Component {
                 <TextField
                     required
                     label="Product Name"
-                    className={classes.textField}
+                    className={classes.textFieldName}
                     value={this.name}
                     onChange={event => this.name = event.target.value}
                     margin="normal" />
+                <br></br>
                 <TextField
                     label="Number Of File"
                     type="number"
@@ -355,7 +357,6 @@ class CreateProductsScreen extends React.Component {
                     value={this.numberOfFile}
                     onChange={event => this.numberOfFile = event.target.value}
                     margin="normal" />
-                <br></br>
                 <TextField
                     label="View"
                     type="number"
@@ -376,7 +377,8 @@ class CreateProductsScreen extends React.Component {
                         }}
                     />
                 </MuiPickersUtilsProvider>
-                <h5>Product cover 4x4</h5>
+                <br></br>
+                <Title text='Image & Cover' />
                 <input
                     accept="image/*"
                     className={classes.input}
@@ -385,13 +387,11 @@ class CreateProductsScreen extends React.Component {
                     type="file"
                     onChange={this.handleFileCover}
                 />
-                <br></br>
                 <label htmlFor="contained-button-file-cover">
                     <Button variant="contained" component="span" className={classes.button}>
-                        Select image
+                        Select cover image (4x4)
                     </Button>
                 </label>
-                <h5>Product banner 8x4</h5>
                 <input
                     accept="image/*"
                     className={classes.input}
@@ -400,12 +400,18 @@ class CreateProductsScreen extends React.Component {
                     type="file"
                     onChange={this.handleFileBanner}
                 />
-                <br></br>
                 <label htmlFor="contained-button-file-banner">
                     <Button variant="contained" component="span" className={classes.button}>
-                        Select image
+                        Select banner image (8x4)
                     </Button>
                 </label>
+                <br></br>
+                {this.files.length > 0 &&
+                    <div>Local image
+                    {this.ImageGallery(classes, this.files, this.handleFileDelete, undefined)}
+                    </div>
+                }
+                <br></br>
                 {this.isEditProductMode &&
                     <div>Live image:
                         {
@@ -413,19 +419,14 @@ class CreateProductsScreen extends React.Component {
                         }
                     </div>
                 }
-                <br></br>
-                <h5>Local image:</h5>
-                {
-                    this.ImageGallery(classes, this.files, this.handleFileDelete, undefined)
-                }
-                <br></br>
-                <h5>Short Detail</h5>
+                <Title text='More info' />
+                <div>Short Detail</div>
                 <CKEditor
                     data={this.shortDetail}
                     type="classic"
                     onChange={this.onEditorShortChange} />
                 <br></br>
-                <h5>Full Detail</h5>
+                <div>Full Detail</div>
                 <CKEditor
                     data={this.fullDetail}
                     type="classic"
@@ -608,6 +609,11 @@ const styles = theme => ({
         marginLeft: theme.spacing(1),
         marginRight: theme.spacing(1),
         width: 200,
+    },
+    textFieldName: {
+        marginLeft: theme.spacing(1),
+        marginRight: theme.spacing(1),
+        width: 350,
     },
     margin: {
         margin: theme.spacing(1),

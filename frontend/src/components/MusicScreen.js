@@ -12,9 +12,9 @@ import { Delete, Edit } from '@material-ui/icons';
 import EnhancedTableHead from './table/EnhancedTableHead';
 import EnhancedTableToolbar from './table/EnhancedTableToolbar';
 import AlertDialog from './dialog/AlertDialog';
-import EditDialog from './dialog/EditDialog';
 import UploadMusicDialog from './dialog/UploadMusicDialog';
 import { HeadStyle } from './table/HeadKey';
+import EditMusicDialog from './dialog/EditMusicDialog';
 
 
 function desc(a, b, orderBy) {
@@ -105,6 +105,7 @@ const getListStyle = isDraggingOver => ({
 class MusicScreen extends React.Component {
     screenName = 'Music'
     @observable data = []
+    @observable totalRows = 0
     @observable openUploadFile = false
     @observable openAlert = false
     @observable openEditAlert = false
@@ -119,10 +120,10 @@ class MusicScreen extends React.Component {
     }
     state = {
         order: 'desc',
-        orderBy: '',
+        orderBy: 'id',
         selected: [],
         page: 0,
-        rowsPerPage: 10,
+        rowsPerPage: 20,
     };
 
     constructor(props) {
@@ -199,12 +200,14 @@ class MusicScreen extends React.Component {
     }
 
     componentDidMount() {
-        this.get()
+        this.get(undefined, this.state.page)
     }
 
-    get(searchText) {
+    get(searchText, page) {
         const data = {
-            searchName: searchText
+            searchName: searchText,
+            page: page + 1,
+            rowsOnPage: this.state.rowsPerPage,
         }
         if (!searchText)
             delete data.searchName
@@ -219,8 +222,10 @@ class MusicScreen extends React.Component {
             return result.json();
         }).then((jsonResult) => {
             console.log(jsonResult);
-            if (jsonResult.success)
-                this.data = jsonResult.data.list
+            if (jsonResult.success) {
+                this.data = [...this.data, ...jsonResult.data.list]
+                this.totalRows = jsonResult.data.totalRows
+            }
             else {
                 this.alert = {
                     title: 'Alert',
@@ -275,6 +280,10 @@ class MusicScreen extends React.Component {
 
     handleChangePage = (event, page) => {
         this.setState({ page });
+        const item =  this.data[page * 20 + 1]
+        if (this.totalRows > this.data.length && !item) {
+            this.get(undefined, page)
+        }
     };
 
     handleChangeRowsPerPage = event => {
@@ -284,11 +293,7 @@ class MusicScreen extends React.Component {
     isSelected = id => this.state.selected.indexOf(id) !== -1;
 
     handleEditClick = (item) => {
-        const data = {
-            id: item.id,
-            name: item.name
-        }
-        this.alertEdit = { ...this.alertEdit, ...data }
+        this.alertEdit = { ...this.alertEdit, ...item }
         this.openEditAlert = true
     }
 
@@ -317,7 +322,7 @@ class MusicScreen extends React.Component {
     handleAgreeEdit = (item) => {
         console.log('Edit data', item.name, item.id)
         this.openEditAlert = false
-        this.editMusic(item.name, item.id)
+        this.editMusic(item)
     }
 
     handlePlayMusic = () => {
@@ -362,23 +367,20 @@ class MusicScreen extends React.Component {
             });
     }
 
-    editMusic(name, id) {
+    editMusic(item) {
         fetch(`${this.props.SessionStore.API_URL}music/update`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
             },
-            body: JSON.stringify({
-                id: id,
-                name: name
-            })
+            body: JSON.stringify(item)
         }).then((result) => {
             return result.json();
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.data = this.data.map(value => value.id === id ? jsonResult.data : value)
+                this.data = this.data.map(value => value.id === item.id ? jsonResult.data : value)
             }
         }).catch((error) => {
             console.error(error);
@@ -415,19 +417,23 @@ class MusicScreen extends React.Component {
         }
     }
 
+    handleDeleteMultiItem = () => {
+        console.log(this.state.selected);
+    }
+
     render() {
         const { classes } = this.props
         const data = this.data;
         const { order, orderBy, selected, rowsPerPage, page } = this.state;
-        const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+        const emptyRows = rowsPerPage - Math.min(rowsPerPage, this.totalRows - page * rowsPerPage);
         return (
             <div>
                 <UploadMusicDialog open={this.openUploadFile} handleClose={this.handleCloseUploadMusic} handleMusicFileChange={this.handleMusicFileChange} />
                 <div>
                     <Paper className={classes.root}>
                         <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
-                        <EditDialog handleClose={this.handleEditAlertClose} handleAgree={this.handleAgreeEdit} data={this.alertEdit} open={this.openEditAlert} />
-                        <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} handleSearch={this.handleSearch} handlePlayMusic={this.handlePlayMusic} />
+                        <EditMusicDialog handleClose={this.handleEditAlertClose} handleAgree={this.handleAgreeEdit} data={this.alertEdit} open={this.openEditAlert} />
+                        <EnhancedTableToolbar numSelected={selected.length} handleDeleteMultiItem={this.handleDeleteMultiItem} toolbarName={this.screenName} handleSearch={this.handleSearch} handlePlayMusic={this.handlePlayMusic} />
                         <div className={classes.tableWrapper}>
                             <Table className={classes.table} aria-labelledby="tableTitle">
                                 <EnhancedTableHead
@@ -507,7 +513,7 @@ class MusicScreen extends React.Component {
                         <TablePagination
                             rowsPerPageOptions={[10, 20, 40]}
                             component="div"
-                            count={data.length}
+                            count={this.totalRows}
                             rowsPerPage={rowsPerPage}
                             page={page}
                             backIconButtonProps={{
