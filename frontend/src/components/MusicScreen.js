@@ -2,7 +2,6 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { observer, inject } from 'mobx-react';
 import { observable } from 'mobx';
-import { DragDropContext, Droppable, Draggable, resetServerContext } from "react-beautiful-dnd";
 import {
     Table, TableBody, TableCell, TablePagination, TableRow,
     Paper, Checkbox, IconButton
@@ -74,32 +73,6 @@ const useStyles = theme => ({
     },
 });
 
-const reorder = (list, startIndex, endIndex) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-
-    return result;
-};
-
-// const grid = 8;
-
-const getItemStyle = (isDragging, draggableStyle) => ({
-    userSelect: "none",
-    // padding: grid * 2,
-    // margin: `0 0 ${grid}px 0`,
-
-    // change background colour if dragging
-    background: isDragging ? "lightgreen" : "white",
-
-    // styles we need to apply on draggables
-    ...draggableStyle
-});
-
-const getListStyle = isDraggingOver => ({
-    background: isDraggingOver ? "white" : "white",
-});
-
 @inject('SessionStore', 'ScreenStore')
 @observer
 class MusicScreen extends React.Component {
@@ -147,22 +120,6 @@ class MusicScreen extends React.Component {
 
     handleTitleChange = (event, myindex) => {
         this.data = this.data.map((value, index) => index === myindex ? Object.assign(value, { title: event.target.value }) : value)
-        resetServerContext()
-    }
-
-    onDragEnd = (result) => {
-        // dropped outside the list
-        if (!result.destination) {
-            return
-        }
-
-        const items = reorder(
-            this.data,
-            result.source.index,
-            result.destination.index
-        )
-        this.data = items
-        console.log(this.data)
     }
 
     handleUploadMusic = () => {
@@ -203,7 +160,7 @@ class MusicScreen extends React.Component {
         this.get(undefined, this.state.page)
     }
 
-    get(searchText, page) {
+    get(searchText, page, isClearSearch) {
         const data = {
             searchName: searchText,
             page: page + 1,
@@ -223,7 +180,10 @@ class MusicScreen extends React.Component {
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.data = [...this.data, ...jsonResult.data.list]
+                if (searchText || isClearSearch)
+                    this.data = jsonResult.data.list
+                else
+                    this.data = [...this.data, ...jsonResult.data.list]
                 this.totalRows = jsonResult.data.totalRows
             }
             else {
@@ -280,7 +240,10 @@ class MusicScreen extends React.Component {
 
     handleChangePage = (event, page) => {
         this.setState({ page });
-        const item =  this.data[page * 20 + 1]
+        let item
+        const index = page * this.state.rowsPerPage + 1
+        if (index < this.data.length)
+            item = this.data[index]
         if (this.totalRows > this.data.length && !item) {
             this.get(undefined, page)
         }
@@ -336,10 +299,11 @@ class MusicScreen extends React.Component {
 
     handleSearch = (searchText) => {
         if (searchText.length > 3) {
+            this.setState({ page: 0 });
             this.get(searchText)
         }
         if (searchText.length === 0)
-            this.get()
+            this.get(undefined, this.state.page, true)
     }
 
     handleUpdateIndex = () => {
@@ -401,9 +365,13 @@ class MusicScreen extends React.Component {
             return result.json();
         }).then((jsonResult) => {
             console.log(jsonResult);
-            if (jsonResult.success) {
-                this.data = this.data.filter(item => item.id !== productId)
-            }
+            if (jsonResult.success)
+                if (typeof productId === 'number') {
+                    this.data = this.data.filter(item => item.id !== productId)
+                } else {
+                    this.data = this.data.filter(e => !productId.includes(e.id));
+                    this.setState({ selected: [] })
+                }
         }).catch((error) => {
             console.error(error);
         });
@@ -419,6 +387,14 @@ class MusicScreen extends React.Component {
 
     handleDeleteMultiItem = () => {
         console.log(this.state.selected);
+        if (this.state.selected && this.state.selected.length > 0) {
+            this.alert = {
+                title: 'Alert',
+                content: `Do you want delete "${this.state.selected.length}" product with id=${this.state.selected.toString()} ?`
+            }
+            this.productId = this.state.selected
+            this.openAlert = true
+        }
     }
 
     render() {
@@ -445,73 +421,51 @@ class MusicScreen extends React.Component {
                                     onRequestSort={this.handleRequestSort}
                                     rowCount={data.length}
                                 />
-                                <DragDropContext constantProp={this.data} onDragEnd={this.onDragEnd}>
-                                    <Droppable droppableId="droppable">
-                                        {(provided, snapshot) => (
-                                            <TableBody
-                                                {...provided.droppableProps}
-                                                ref={provided.innerRef}
-                                                style={getListStyle(snapshot.isDraggingOver)}
-                                            >
-                                                {stableSort(data, getSorting(order, orderBy))
-                                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                                    .map((n, index) => {
-                                                        const isSelected = this.isSelected(n.id);
-                                                        return (
-                                                            <Draggable key={n.id} draggableId={n.id} index={index}>
-                                                                {(provided, snapshot) => (
-                                                                    <TableRow
-                                                                        ref={provided.innerRef}
-                                                                        {...provided.draggableProps}
-                                                                        {...provided.dragHandleProps}
-                                                                        style={getItemStyle(
-                                                                            snapshot.isDragging,
-                                                                            provided.draggableProps.style
-                                                                        )}
-                                                                        hover
-                                                                        // onClick={event => this.handleClick(event, n.id)}
-                                                                        role="checkbox"
-                                                                        aria-checked={isSelected}
-                                                                        tabIndex={-1}
-                                                                        key={n.id}
-                                                                        selected={isSelected}
-                                                                    >
-                                                                        <TableCell padding="checkbox">
-                                                                            <Checkbox onChange={() => this.handleClick(undefined, n.id)} checked={isSelected} />
-                                                                        </TableCell>
-                                                                        <TableCell component="th" scope="row" padding="none">{n.id}</TableCell>
-                                                                        <TableCell component="th" scope="row" padding="none">{n.name}</TableCell>
-                                                                        <TableCell component="th" scope="row" padding="none">{n.type}</TableCell>
-                                                                        <TableCell component="th" scope="row" padding="none">{n.url}</TableCell>
-                                                                        <TableCell align="right">
-                                                                            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
-                                                                                <IconButton onClick={() => this.handleEditClick(n)} color="primary" className={classes.button} aria-label="Edit">
-                                                                                    <Edit />
-                                                                                </IconButton>
-                                                                                <IconButton onClick={() => this.handleDeleteClick(n)} color="secondary" className={classes.button} aria-label="Delete">
-                                                                                    <Delete />
-                                                                                </IconButton>
-                                                                            </div>
-                                                                        </TableCell>
-                                                                    </TableRow>
-                                                                )}
-                                                            </Draggable>
-                                                        );
-                                                    })}
-                                                {emptyRows > 0 && (
-                                                    <TableRow style={{ height: 49 * emptyRows }}>
-                                                        <TableCell colSpan={6} />
-                                                    </TableRow>
-                                                )}
-                                                {provided.placeholder}
-                                            </TableBody>
-                                        )}
-                                    </Droppable>
-                                </DragDropContext>
+                                <TableBody>
+                                    {stableSort(data, getSorting(order, orderBy))
+                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                        .map((n, index) => {
+                                            const isSelected = this.isSelected(n.id);
+                                            return (
+                                                <TableRow
+                                                    hover
+                                                    // onClick={event => this.handleClick(event, n.id)}
+                                                    role="checkbox"
+                                                    aria-checked={isSelected}
+                                                    tabIndex={-1}
+                                                    key={n.id}
+                                                    selected={isSelected}
+                                                >
+                                                    <TableCell padding="checkbox">
+                                                        <Checkbox onChange={() => this.handleClick(undefined, n.id)} checked={isSelected} />
+                                                    </TableCell>
+                                                    <TableCell component="th" scope="row" padding="none">{n.id}</TableCell>
+                                                    <TableCell component="th" scope="row" padding="none">{n.name}</TableCell>
+                                                    <TableCell component="th" scope="row" padding="none">{n.type}</TableCell>
+                                                    <TableCell component="th" scope="row" padding="none">{n.url}</TableCell>
+                                                    <TableCell align="right">
+                                                        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
+                                                            <IconButton onClick={() => this.handleEditClick(n)} color="primary" className={classes.button} aria-label="Edit">
+                                                                <Edit />
+                                                            </IconButton>
+                                                            <IconButton onClick={() => this.handleDeleteClick(n)} color="secondary" className={classes.button} aria-label="Delete">
+                                                                <Delete />
+                                                            </IconButton>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    {emptyRows > 0 && (
+                                        <TableRow style={{ height: 49 * emptyRows }}>
+                                            <TableCell colSpan={6} />
+                                        </TableRow>
+                                    )}
+                                </TableBody>
                             </Table>
                         </div>
                         <TablePagination
-                            rowsPerPageOptions={[10, 20, 40]}
+                            rowsPerPageOptions={[20]}
                             component="div"
                             count={this.totalRows}
                             rowsPerPage={rowsPerPage}

@@ -65,6 +65,7 @@ const styles = theme => ({
 class DeveloperScreen extends React.Component {
     screenName = 'Developer'
     @observable data = []
+    @observable totalRows = 0
     @observable openAlert = false
     @observable openEditAlert = false
     @observable productId
@@ -133,6 +134,13 @@ class DeveloperScreen extends React.Component {
 
     handleChangePage = (event, page) => {
         this.setState({ page });
+        let item
+        const index = page * this.state.rowsPerPage + 1
+        if (index < this.data.length)
+            item = this.data[index]
+        if (this.totalRows > this.data.length && !item) {
+            this.get(undefined, page)
+        }
     };
 
     handleChangeRowsPerPage = event => {
@@ -175,23 +183,37 @@ class DeveloperScreen extends React.Component {
     }
 
     handleSearch = (searchText) => {
-        if (searchText.length > 3)
+        if (searchText.length > 3) {
+            this.setState({ page: 0 });
             this.get(searchText)
+        }
         if (searchText.length === 0)
-            this.get()
+            this.get(undefined, this.state.page, true)
+    }
+
+    handleDeleteMultiItem = () => {
+        console.log(this.state.selected);
+        if (this.state.selected && this.state.selected.length > 0) {
+            this.alert = {
+                title: 'Alert',
+                content: `Do you want delete "${this.state.selected.length}" product with id=${this.state.selected.toString()} ?`
+            }
+            this.productId = this.state.selected
+            this.openAlert = true
+        }
     }
 
     render() {
         const { classes } = this.props;
         const data = this.data;
         const { order, orderBy, selected, rowsPerPage, page } = this.state;
-        const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+        const emptyRows = rowsPerPage - Math.min(rowsPerPage, this.totalRows - page * rowsPerPage);
 
         return (
             <Paper className={classes.root}>
                 <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
                 <EditDialog handleClose={this.handleEditAlertClose} handleAgree={this.handleAgreeEdit} data={this.alertEdit} open={this.openEditAlert} />
-                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} handleSearch={this.handleSearch} />
+                <EnhancedTableToolbar numSelected={selected.length} handleDeleteMultiItem={this.handleDeleteMultiItem} toolbarName={this.screenName} handleSearch={this.handleSearch} />
                 <div className={classes.tableWrapper}>
                     <Table className={classes.table} aria-labelledby="tableTitle">
                         <EnhancedTableHead
@@ -247,9 +269,9 @@ class DeveloperScreen extends React.Component {
                     </Table>
                 </div>
                 <TablePagination
-                    rowsPerPageOptions={[10, 20, 40]}
+                    rowsPerPageOptions={[20]}
                     component="div"
-                    count={data.length}
+                    count={this.totalRows}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     backIconButtonProps={{
@@ -266,13 +288,13 @@ class DeveloperScreen extends React.Component {
     }
 
     componentDidMount() {
-        this.get()
+        this.get(undefined, this.state.page)
     }
 
-    get(searchText) {
+    get(searchText, page, isClearSearch) {
         const data = {
-            page: this.active,
-            rowsOnPage: 20,
+            page: page + 1,
+            rowsOnPage: this.state.rowsPerPage,
             searchName: searchText
         }
         if (!searchText)
@@ -289,7 +311,11 @@ class DeveloperScreen extends React.Component {
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.data = jsonResult.data.list
+                if (searchText || isClearSearch)
+                    this.data = jsonResult.data.list
+                else
+                    this.data = [...this.data, ...jsonResult.data.list]
+                this.totalRows = jsonResult.data.totalRows
             }
         }).catch((error) => {
             console.error(error);
@@ -335,7 +361,12 @@ class DeveloperScreen extends React.Component {
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.data = this.data.filter(item => item.id !== productId)
+                if (typeof productId === 'number') {
+                    this.data = this.data.filter(item => item.id !== productId)
+                } else {
+                    this.data = this.data.filter(e => !productId.includes(e.id));
+                    this.setState({ selected: [] })
+                }
             }
         }).catch((error) => {
             console.error(error);

@@ -200,6 +200,18 @@ class BannerScreen extends React.Component {
         this.updatePublishProducts(data)
     }
 
+    handleDeleteMultiItem = () => {
+        console.log(this.state.selected);
+        if (this.state.selected && this.state.selected.length > 0) {
+            this.alert = {
+                title: 'Alert',
+                content: `Do you want delete "${this.state.selected.length}" product with id=${this.state.selected.toString()} ?`
+            }
+            this.productId = this.state.selected
+            this.openAlert = true
+        }
+    }
+
     render() {
         const { classes } = this.props;
         const data = this.data;
@@ -214,7 +226,9 @@ class BannerScreen extends React.Component {
                     numSelected={selected.length}
                     toolbarName={this.screenName}
                     handleSearch={this.handleSearch}
-                    handleCreate={this.handleCreateBanner} />
+                    handleCreate={this.handleCreateBanner}
+                    handleDeleteMultiItem={this.handleDeleteMultiItem}
+                />
                 <div className={classes.tableWrapper}>
                     <Table className={classes.table} aria-labelledby="tableTitle">
                         <EnhancedTableHead
@@ -355,7 +369,7 @@ class BannerScreen extends React.Component {
         });
     }
 
-    deleteProducts(id) {
+    deleteProducts(productId) {
         fetch(`${this.props.SessionStore.API_URL}banner/delete`, {
             method: 'DELETE',
             headers: {
@@ -363,15 +377,19 @@ class BannerScreen extends React.Component {
                 'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
             },
             body: JSON.stringify({
-                id: id
+                id: productId
             })
         }).then((result) => {
             return result.json();
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.data = this.data.filter(item => item.id !== id)
-                this.handleClick(undefined, id)
+                if (typeof productId === 'number') {
+                    this.data = this.data.filter(item => item.id !== productId)
+                } else {
+                    this.data = this.data.filter(e => !productId.includes(e.id));
+                    this.setState({ selected: [] })
+                }
             }
         }).catch((error) => {
             console.error(error);

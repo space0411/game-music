@@ -8,10 +8,11 @@ const rowsProduct = [
     { id: 'name', numeric: false, disablePadding: true, label: 'Name' },
     { id: 'idGame', numeric: true, disablePadding: false, label: 'GameID' },
     { id: 'releaseDate', numeric: true, disablePadding: false, label: 'Release Date' },
-    { id: 'createdBy', numeric: true, disablePadding: false, label: 'Created By' },
+    // { id: 'createdBy', numeric: true, disablePadding: false, label: 'Created By' },
     { id: 'numberOfFile', numeric: true, disablePadding: false, label: 'Number Of File' },
     { id: 'view', numeric: true, disablePadding: false, label: 'Number Of View' },
     { id: 'publish', numeric: false, disablePadding: false, label: 'Publish' },
+    { id: 'deletedAt', numeric: false, disablePadding: true, label: 'deletedAt' },
     { id: 'options', numeric: true, disablePadding: false, label: '' },
 ];
 
@@ -53,6 +54,7 @@ const rowsUser = [
     { id: 'email', numeric: false, disablePadding: true, label: 'Email' },
     { id: 'phone', numeric: false, disablePadding: true, label: 'Phone' },
     { id: 'createdAt', numeric: false, disablePadding: true, label: 'createdAt' },
+    { id: 'deletedAt', numeric: false, disablePadding: true, label: 'deletedAt' },
     { id: 'options', numeric: true, disablePadding: false, label: '' },
 ];
 

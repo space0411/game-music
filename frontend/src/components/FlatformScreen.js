@@ -181,6 +181,18 @@ class FlatformScreen extends React.Component {
             this.getFlatform()
     }
 
+    handleDeleteMultiItem = () => {
+        console.log(this.state.selected);
+        if (this.state.selected && this.state.selected.length > 0) {
+            this.alert = {
+                title: 'Alert',
+                content: `Do you want delete "${this.state.selected.length}" product with id=${this.state.selected.toString()} ?`
+            }
+            this.productId = this.state.selected
+            this.openAlert = true
+        }
+    }
+
     render() {
         const { classes } = this.props;
         const data = this.data;
@@ -191,7 +203,7 @@ class FlatformScreen extends React.Component {
             <Paper className={classes.root}>
                 <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
                 <EditDialog handleClose={this.handleEditAlertClose} handleAgree={this.handleAgreeEdit} data={this.alertEdit} open={this.openEditAlert} />
-                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} handleSearch={this.handleSearch} />
+                <EnhancedTableToolbar numSelected={selected.length} handleDeleteMultiItem={this.handleDeleteMultiItem} toolbarName={this.screenName} handleSearch={this.handleSearch} />
                 <div className={classes.tableWrapper}>
                     <Table className={classes.table} aria-labelledby="tableTitle">
                         <EnhancedTableHead
@@ -334,7 +346,12 @@ class FlatformScreen extends React.Component {
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.data = this.data.filter(item => item.id !== productId)
+                if (typeof productId === 'number') {
+                    this.data = this.data.filter(item => item.id !== productId)
+                } else {
+                    this.data = this.data.filter(e => !productId.includes(e.id));
+                    this.setState({ selected: [] })
+                }
             }
         }).catch((error) => {
             console.error(error);

@@ -5,10 +5,10 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import {
     Table, TableBody, TableCell, TablePagination, TableRow,
-    Paper, Checkbox, IconButton
+    Paper, Checkbox, IconButton, Tooltip
 } from '@material-ui/core';
 import { green } from '@material-ui/core/colors';
-import { Delete, Edit } from '@material-ui/icons';
+import { Delete, Edit, SettingsBackupRestore } from '@material-ui/icons';
 import { Redirect } from "react-router-dom";
 import Moment from 'react-moment';
 
@@ -16,6 +16,7 @@ import EnhancedTableHead from './table/EnhancedTableHead';
 import EnhancedTableToolbar from './table/EnhancedTableToolbar';
 import AlertDialog from './dialog/AlertDialog';
 import { HeadStyle } from './table/HeadKey';
+import moment from 'moment';
 
 const GreenCheckbox = withStyles({
     root: {
@@ -174,10 +175,12 @@ class ProductsScreen extends React.Component {
     }
 
     handleSearch = (searchText) => {
-        if (searchText.length > 3)
+        if (searchText.length > 3) {
+            this.setState({ page: 0 });
             this.getProducts(searchText)
+        }
         if (searchText.length === 0)
-            this.getProducts()
+            this.getProducts(undefined, this.state.page, true)
     }
 
     handleCreateProduct = () => {
@@ -186,6 +189,22 @@ class ProductsScreen extends React.Component {
 
     handleChangePublish = (data) => {
         this.updatePublishProducts(data)
+    }
+
+    handleDeleteMultiItem = () => {
+        console.log(this.state.selected);
+        if (this.state.selected && this.state.selected.length > 0) {
+            this.alert = {
+                title: 'Alert',
+                content: `Do you want delete "${this.state.selected.length}" product with id=${this.state.selected.toString()} ?`
+            }
+            this.productId = this.state.selected
+            this.openAlert = true
+        }
+    }
+
+    handleRevivalClick = (item) => {
+        this.revivalProduct(item.id)
     }
 
     render() {
@@ -200,7 +219,7 @@ class ProductsScreen extends React.Component {
         return (
             <Paper className={classes.root}>
                 <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
-                <EnhancedTableToolbar numSelected={selected.length} toolbarName={this.screenName} handleSearch={this.handleSearch} handleCreate={this.handleCreateProduct} />
+                <EnhancedTableToolbar numSelected={selected.length} handleDeleteMultiItem={this.handleDeleteMultiItem} toolbarName={this.screenName} handleSearch={this.handleSearch} handleCreate={this.handleCreateProduct} />
                 <div className={classes.tableWrapper}>
                     <Table className={classes.table} aria-labelledby="tableTitle">
                         <EnhancedTableHead
@@ -235,11 +254,28 @@ class ProductsScreen extends React.Component {
                                                 {n.name}
                                             </TableCell>
                                             <TableCell align="right">{n.idGame}</TableCell>
-                                            <TableCell align="right"><Moment format="D MMM YYYY" unix>{n.releaseDate}</Moment></TableCell>
-                                            <TableCell align="right">{n.createdBy}</TableCell>
+                                            <TableCell align="right">
+                                                <Moment format="D MMM YYYY hh:mm" unix>{moment(n.releaseDate)}</Moment>
+                                            </TableCell>
+                                            {/* <TableCell align="right">{n.createdBy}</TableCell> */}
                                             <TableCell align="right">{n.numberOfFile}</TableCell>
                                             <TableCell align="right">{n.view}</TableCell>
-                                            <TableCell padding="checkbox"><GreenCheckbox onClick={() => this.handleChangePublish(n)} checked={n.publish} /></TableCell>
+                                            <TableCell padding="checkbox">
+                                                <GreenCheckbox onClick={() => this.handleChangePublish(n)} checked={n.publish} />
+                                            </TableCell>
+                                            <TableCell component="th" scope="row" padding="none">
+                                                {
+                                                    n.deletedAt !== 0 &&
+                                                    <div>
+                                                        <Moment format="D MMM YYYY hh:mm">{moment(n.deletedAt)}</Moment>
+                                                        <Tooltip title="Revival">
+                                                            <IconButton onClick={() => this.handleRevivalClick(n)} color="primary" className={classes.button} aria-label="Revival">
+                                                                <SettingsBackupRestore />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </div>
+                                                }
+                                            </TableCell>
                                             <TableCell align="right">
                                                 <div className="d-flex flex-row">
                                                     <IconButton onClick={() => this.handleEditClick(n)} color="primary" className={classes.button} aria-label="Edit">
@@ -284,11 +320,12 @@ class ProductsScreen extends React.Component {
         this.getProducts()
     }
 
-    getProducts(searchText, page) {
+    getProducts(searchText, page, isClearSearch) {
         const data = {
             page: page + 1,
             rowsOnPage: this.state.rowsPerPage,
-            searchName: searchText
+            searchName: searchText,
+            deletedAt: true
         }
         if (!searchText)
             delete data.searchName
@@ -304,7 +341,10 @@ class ProductsScreen extends React.Component {
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.data = [...this.data, ...jsonResult.data.list]
+                if (searchText || isClearSearch)
+                    this.data = jsonResult.data.list
+                else
+                    this.data = [...this.data, ...jsonResult.data.list]
                 this.totalRows = jsonResult.data.totalRows
             }
         }).catch((error) => {
@@ -341,6 +381,32 @@ class ProductsScreen extends React.Component {
         });
     }
 
+    revivalProduct(id) {
+        fetch(`${this.props.SessionStore.API_URL}product/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
+            },
+            body: JSON.stringify({
+                id: id,
+                deletedAt: 0
+            })
+        }).then((result) => {
+            return result.json();
+        }).then((jsonResult) => {
+            console.log(jsonResult);
+            if (jsonResult.success) {
+                const index = this.data.findIndex(value => value.id === id)
+                if (index !== -1) {
+                    this.data.splice(index, 1, jsonResult.data)
+                }
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
     deleteProducts(productId) {
         fetch(`${this.props.SessionStore.API_URL}product/delete`, {
             method: 'DELETE',
@@ -356,8 +422,20 @@ class ProductsScreen extends React.Component {
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.data = this.data.filter(item => item.id !== productId)
-                this.handleClick(undefined, productId)
+                if (typeof productId !== 'number') {
+                    this.setState({ selected: [] })
+                }
+                const resData = jsonResult.data
+                if (resData) {
+                    const tempData = [...this.data]
+                    resData.forEach(value => {
+                        const index = tempData.findIndex(item => value.id === item.id)
+                        if (index !== -1) {
+                            tempData.splice(index, 1, value)
+                        }
+                    })
+                    this.data = tempData
+                }
             }
         }).catch((error) => {
             console.error(error);
