@@ -26,9 +26,11 @@ import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 // core components
 import tableStyle from "../../assets/jss/material-dashboard-react/components/tableStyle.jsx";
+import Moment from "react-moment";
 
 function CustomTable({ ...props }) {
   const { classes, tableHead, tableData, tableHeaderColor } = props;
+  console.log('tableData', tableData);
   return (
     <div className={classes.tableResponsive}>
       <Table className={classes.table}>
@@ -49,16 +51,21 @@ function CustomTable({ ...props }) {
           </TableHead>
         ) : null}
         <TableBody>
-          {tableData.map((prop, key) => {
+          {tableData.map((item, index) => {
             return (
-              <TableRow key={key} className={classes.tableBodyRow}>
-                {prop.map((prop, key) => {
-                  return (
-                    <TableCell className={classes.tableCell} key={key}>
-                      {prop}
+              <TableRow key={index} className={classes.tableBodyRow}>
+                    <TableCell className={classes.tableCell}>
+                      {item.id}
                     </TableCell>
-                  );
-                })}
+                    <TableCell className={classes.tableCell}>
+                      {item.name}
+                    </TableCell>
+                    <TableCell className={classes.tableCell}>
+                      {item.email ? item.email: item.numberOfFile}
+                    </TableCell>
+                    <TableCell className={classes.tableCell}>
+                      <Moment format="D MMM YYYY hh:mm">{item.createdAt}</Moment>
+                    </TableCell>
               </TableRow>
             );
           })}
@@ -84,7 +91,7 @@ CustomTable.propTypes = {
     "gray"
   ]),
   tableHead: PropTypes.arrayOf(PropTypes.string),
-  tableData: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string))
+  // tableData: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string))
 };
 
 export default withStyles(tableStyle)(CustomTable);

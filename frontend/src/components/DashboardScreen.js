@@ -4,43 +4,45 @@ import { observable } from "mobx";
 // nodejs library to set properties for components
 import PropTypes from "prop-types";
 // react plugin for creating charts
-import ChartistGraph from "react-chartist";
+// import ChartistGraph from "react-chartist";
 // @material-ui/core
 import withStyles from "@material-ui/core/styles/withStyles";
 // @material-ui/icons
-import Warning from "@material-ui/icons/Warning";
-import DateRange from "@material-ui/icons/DateRange";
-import LocalOffer from "@material-ui/icons/LocalOffer";
+// import Warning from "@material-ui/icons/Warning";
+// import DateRange from "@material-ui/icons/DateRange";
+// import LocalOffer from "@material-ui/icons/LocalOffer";
 import Update from "@material-ui/icons/Update";
-import ArrowUpward from "@material-ui/icons/ArrowUpward";
-import AccessTime from "@material-ui/icons/AccessTime";
+// import ArrowUpward from "@material-ui/icons/ArrowUpward";
+// import AccessTime from "@material-ui/icons/AccessTime";
 import Accessibility from "@material-ui/icons/Accessibility";
-import BugReport from "@material-ui/icons/BugReport";
-import Code from "@material-ui/icons/Code";
-import Cloud from "@material-ui/icons/Cloud";
+// import BugReport from "@material-ui/icons/BugReport";
+// import Code from "@material-ui/icons/Code";
+// import Cloud from "@material-ui/icons/Cloud";
 // core components
 import GridItem from "./custom/Grid/GridItem.jsx";
 import GridContainer from "./custom/Grid/GridContainer.jsx";
 import Table from "./custom/Table/Table.jsx";
-import Tasks from "./custom/Tasks/Tasks.jsx";
-import CustomTabs from "./custom/CustomTabs/CustomTabs.jsx";
-import Danger from "./custom/Typography/Danger.jsx";
+// import Tasks from "./custom/Tasks/Tasks.jsx";
+// import CustomTabs from "./custom/CustomTabs/CustomTabs.jsx";
+// import Danger from "./custom/Typography/Danger.jsx";
 import Card from "./custom/Card/Card";
 import CardHeader from "./custom/Card/CardHeader.jsx";
 import CardIcon from "./custom/Card/CardIcon.jsx";
 import CardBody from "./custom/Card/CardBody.jsx";
 import CardFooter from "./custom/Card/CardFooter.jsx";
 
-import { bugs, website, server } from "./variables/general.jsx";
+// import { bugs, website, server } from "./variables/general.jsx";
 
-import {
-    dailySalesChart,
-    emailsSubscriptionChart,
-    completedTasksChart
-} from "./variables/charts.jsx";
+// import {
+//     dailySalesChart,
+//     emailsSubscriptionChart,
+//     completedTasksChart
+// } from "./variables/charts.jsx";
 
 import dashboardStyle from "./assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
 import { FileCopy, Games, RestaurantMenu } from '@material-ui/icons';
+import moment from 'moment';
+import Moment from 'react-moment';
 
 @inject('SessionStore', 'ScreenStore')
 @observer
@@ -90,16 +92,21 @@ class DashboardScreen extends Component {
 
     getCardHeaderValue() {
         const tempData = {
-            usedSpace: '49/50',
+            music: 0,
             game: 0,
             product: 0,
-            account: 0
+            account: 0,
+            foundUser: [],
+            foundProduct: []
         }
         const data = this.data
         if (data) {
+            tempData.music = data.totalMusic
             tempData.game = data.totalGame
             tempData.account = data.totalAccount
             tempData.product = data.totalProduct
+            tempData.foundUser = data.user
+            tempData.foundProduct = data.product
         }
         return tempData
     }
@@ -116,19 +123,15 @@ class DashboardScreen extends Component {
                                 <CardIcon color="warning">
                                     <FileCopy />
                                 </CardIcon>
-                                <p className={classes.cardCategory}>Used Space</p>
+                                <p className={classes.cardCategory}>Music</p>
                                 <h3 className={classes.cardTitle}>
-                                    {headCardData.usedSpace} <small>GB</small>
+                                    {headCardData.music}
                                 </h3>
                             </CardHeader>
                             <CardFooter stats>
                                 <div className={classes.stats}>
-                                    <Danger>
-                                        <Warning />
-                                    </Danger>
-                                    <a href="#pablo" onClick={e => e.preventDefault()}>
-                                        Get more space
-                                    </a>
+                                    <Update />
+                                    Just Updated
                                 </div>
                             </CardFooter>
                         </Card>
@@ -144,9 +147,9 @@ class DashboardScreen extends Component {
                             </CardHeader>
                             <CardFooter stats>
                                 <div className={classes.stats}>
-                                    <DateRange />
-                                    Last 24 Hours
-                </div>
+                                    <Update />
+                                    Just Updated
+                                </div>
                             </CardFooter>
                         </Card>
                     </GridItem>
@@ -161,8 +164,8 @@ class DashboardScreen extends Component {
                             </CardHeader>
                             <CardFooter stats>
                                 <div className={classes.stats}>
-                                    <LocalOffer />
-                                    Tracked from Github
+                                    <Update />
+                                    Just Updated
                                 </div>
                             </CardFooter>
                         </Card>
@@ -185,7 +188,7 @@ class DashboardScreen extends Component {
                         </Card>
                     </GridItem>
                 </GridContainer>
-                <GridContainer>
+                {/* <GridContainer>
                     <GridItem xs={12} sm={12} md={4}>
                         <Card chart>
                             <CardHeader color="success">
@@ -262,9 +265,9 @@ class DashboardScreen extends Component {
                             </CardFooter>
                         </Card>
                     </GridItem>
-                </GridContainer>
+                </GridContainer> */}
                 <GridContainer>
-                    <GridItem xs={12} sm={12} md={6}>
+                    {/* <GridItem xs={12} sm={12} md={6}>
                         <CustomTabs
                             title="Tasks:"
                             headerColor="primary"
@@ -304,25 +307,37 @@ class DashboardScreen extends Component {
                                 }
                             ]}
                         />
+                    </GridItem> */}
+                    <GridItem xs={12} sm={12} md={6}>
+                        <Card>
+                            <CardHeader color="success">
+                                <h4 className={classes.cardTitleWhite}>New comer</h4>
+                                <p className={classes.cardCategoryWhite}>
+                                    update at <Moment format="D MMM YYYY hh:mm">{moment()}</Moment>
+                                </p>
+                            </CardHeader>
+                            <CardBody>
+                                <Table
+                                    tableHeaderColor="success"
+                                    tableHead={["ID", "Name", "Email", "Created at"]}
+                                    tableData={headCardData.foundUser}
+                                />
+                            </CardBody>
+                        </Card>
                     </GridItem>
                     <GridItem xs={12} sm={12} md={6}>
                         <Card>
                             <CardHeader color="warning">
-                                <h4 className={classes.cardTitleWhite}>Employees Stats</h4>
+                                <h4 className={classes.cardTitleWhite}>New product</h4>
                                 <p className={classes.cardCategoryWhite}>
-                                    New employees on 15th September, 2016
-                </p>
+                                    update at <Moment format="D MMM YYYY hh:mm">{moment()}</Moment>
+                                </p>
                             </CardHeader>
                             <CardBody>
                                 <Table
                                     tableHeaderColor="warning"
-                                    tableHead={["ID", "Name", "Salary", "Country"]}
-                                    tableData={[
-                                        ["1", "Dakota Rice", "$36,738", "Niger"],
-                                        ["2", "Minerva Hooper", "$23,789", "Curaçao"],
-                                        ["3", "Sage Rodriguez", "$56,142", "Netherlands"],
-                                        ["4", "Philip Chaney", "$38,735", "Korea, South"]
-                                    ]}
+                                    tableHead={["ID", "Name", "NumberOfFile", "Created at"]}
+                                    tableData={headCardData.foundProduct}
                                 />
                             </CardBody>
                         </Card>

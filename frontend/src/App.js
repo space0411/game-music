@@ -10,7 +10,7 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 import withStyles from "@material-ui/core/styles/withStyles";
 // core components
 import Navbar from "./components/custom/Navbars/Navbar.jsx";
-import Footer from "./components/custom/Footer/Footer.jsx";
+// import Footer from "./components/custom/Footer/Footer.jsx";
 import Sidebar from "./components/custom/Sidebar/Sidebar.jsx";
 // import FixedPlugin from "./components/custom/FixedPlugin/FixedPlugin.jsx";
 import MusicPlayerDialog from './components/dialog/MusicPlayerDialog';
@@ -19,7 +19,7 @@ import routes from "./routes.js";
 
 import dashboardStyle from "./components/assets/jss/material-dashboard-react/layouts/dashboardStyle.jsx";
 
-import image from "./components/assets/img/sidebar-2.jpg";
+import image from "./components/assets/img/sidebar-3.jpg";
 import logo from "./components/assets/img/reactlogo.png";
 import UserProfileDialog from './components/dialog/UserProfileDialog';
 import AlertDialog from './components/dialog/AlertDialog';
@@ -49,7 +49,7 @@ class App extends Component {
 
   state = {
     image: image,
-    color: "blue",
+    color: "purple",
     hasImage: true,
     fixedClasses: "dropdown show",
     mobileOpen: false,
@@ -61,21 +61,21 @@ class App extends Component {
 
   mainPanel = React.createRef();
 
-  handleImageClick = image => {
-    this.setState({ image: image });
-  };
+  // handleImageClick = image => {
+  //   this.setState({ image: image });
+  // };
 
-  handleColorClick = color => {
-    this.setState({ color: color });
-  };
+  // handleColorClick = color => {
+  //   this.setState({ color: color });
+  // };
 
-  handleFixedClick = () => {
-    if (this.state.fixedClasses === "dropdown") {
-      this.setState({ fixedClasses: "dropdown show" });
-    } else {
-      this.setState({ fixedClasses: "dropdown" });
-    }
-  };
+  // handleFixedClick = () => {
+  //   if (this.state.fixedClasses === "dropdown") {
+  //     this.setState({ fixedClasses: "dropdown show" });
+  //   } else {
+  //     this.setState({ fixedClasses: "dropdown" });
+  //   }
+  // };
 
   handleDrawerToggle = () => {
     this.setState({ mobileOpen: !this.state.mobileOpen });
@@ -154,7 +154,7 @@ class App extends Component {
           ) : (
               <div className={classes.map}>{switchRoutes}</div>
             )}
-          {this.getRoute() ? <Footer /> : null}
+          {/* {this.getRoute() ? <Footer /> : null} */}
         </div>
         <MusicPlayerDialog />
         <UserProfileDialog handleClose={this.handleUserProfileClose} data={userInfo} open={isShowProfile} />
