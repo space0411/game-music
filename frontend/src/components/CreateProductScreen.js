@@ -299,12 +299,17 @@ class CreateProductsScreen extends React.Component {
                     data={this.alertRemoveImage} />
                 <Title text='Product information' />
                 <Button variant="contained" className={classes.button} onClick={this.handleNewFlatformGenre} color="primary">New Flatform & Genre</Button>
-                <Button variant="contained" className={classes.button} onClick={this.handleOpenUploadMusicDialog} color="secondary">
-                    Upload Music<QueueMusic className={classes.rightIcon} />
-                </Button>
-                <Button variant="contained" className={classes.button} onClick={this.handleOpenMusicDialog} color="secondary">
-                    Music<QueueMusic className={classes.rightIcon} />
-                </Button>
+                {
+                    this.isEditProductMode &&
+                    <>
+                        <Button variant="contained" className={classes.button} onClick={this.handleOpenUploadMusicDialog} color="secondary">
+                            Upload Music<QueueMusic className={classes.rightIcon} />
+                        </Button>
+                        <Button variant="contained" className={classes.button} onClick={this.handleOpenMusicDialog} color="secondary">
+                            Music<QueueMusic className={classes.rightIcon} />
+                        </Button>
+                    </>
+                }
                 <br></br>
                 <FormControl className={classes.formControl}>
                     <Select

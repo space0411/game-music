@@ -159,7 +159,7 @@ class BannerScreen extends React.Component {
     handleDeleteClick = (item) => {
         this.alert = {
             title: 'Alert',
-            content: `Do you want delete product "${item.name}" with id=${item.id} ?`
+            content: `Do you want delete product "${item.title}" with id=${item.id} ?`
         }
         this.productId = item.id
         this.openAlert = true
@@ -196,6 +196,14 @@ class BannerScreen extends React.Component {
         }
     }
 
+    handleEditRow = (data) => {
+        console.log(data);
+        const index = this.data.findIndex(value => value.id === data.id)
+        if (index !== -1) {
+            this.data.splice(index, 1, data)
+        }
+    }
+
     handleChangePublish = (data) => {
         this.updatePublishProducts(data)
     }
@@ -220,7 +228,13 @@ class BannerScreen extends React.Component {
 
         return (
             <Paper className={classes.root}>
-                <CreateBannerDialog open={this.openCreate} data={this.selectedItem} handleClose={this.handleCloseCreateBanner} handleAddNewRow={this.handleAddNewRow} />
+                <CreateBannerDialog
+                    open={this.openCreate}
+                    data={this.selectedItem}
+                    handleClose={this.handleCloseCreateBanner}
+                    handleAddNewRow={this.handleAddNewRow}
+                    handleEditRow={this.handleEditRow}
+                />
                 <AlertDialog handleAgree={this.handleAgreeDelete} handleDisagree={this.handleAlertClose} handleClose={this.handleAlertClose} data={this.alert} open={this.openAlert} />
                 <EnhancedTableToolbar
                     numSelected={selected.length}

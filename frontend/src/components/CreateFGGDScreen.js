@@ -589,29 +589,29 @@ class CreateCategories extends React.Component {
                                 value={this.developerURL}
                                 onChange={event => this.developerURL = event.target.value}
                                 margin="normal" />
-                            <input
-                                accept="image/*"
-                                className={classes.input}
-                                id="contained-button-file-developer"
-                                multiple
-                                type="file"
-                                onChange={this.handleDeveloperFileChange}
-                            />
-                            <label htmlFor="contained-button-file-developer">
-                                <Button variant="contained" component="span" className={classes.button}>
-                                    Select logo image
-                            </Button>
-                            </label>
-                            <List dense className={classes.rootImageList}>
-                                {this.filesDeveloper.map((item, index) => (
-                                    <ListItem key={index} button>
-                                        <ListItemText primary={item.name} />
-                                        <ListItemSecondaryAction>
-                                            <ClearIcon onClick={() => this.handleDeveloperFileDelete(index)} />
-                                        </ListItemSecondaryAction>
-                                    </ListItem>
-                                ))}
-                            </List>
+                            <div>
+                                <input
+                                    accept="image/*"
+                                    className={classes.input}
+                                    id="contained-button-file-developer"
+                                    multiple
+                                    type="file"
+                                    onChange={this.handleDeveloperFileChange}
+                                />
+                                <label htmlFor="contained-button-file-developer">
+                                    <Button variant="contained" component="span" className={classes.button}>Select logo image</Button>
+                                </label>
+                                <List dense className={classes.rootImageList}>
+                                    {this.filesDeveloper.map((item, index) => (
+                                        <ListItem key={index} button>
+                                            <ListItemText primary={item.name} />
+                                            <ListItemSecondaryAction style={{ position: 'absolute', right: 0}}>
+                                                <ClearIcon fontSize="small" onClick={() => this.handleDeveloperFileDelete(index)} />
+                                            </ListItemSecondaryAction>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardFooter stats style={{ display: ' flex', justifyContent: 'flex-end' }}>
@@ -704,6 +704,7 @@ const styles = theme => ({
     rootImageList: {
         width: 'fit-content',
         backgroundColor: theme.palette.background.paper,
+        color: '#000'
     },
     cardTitle: {
         color: 'black',
@@ -712,7 +713,7 @@ const styles = theme => ({
     },
     tabContent: {
         padding: 0
-    }
+    },
 });
 
 CreateCategories.propTypes = {

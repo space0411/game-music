@@ -117,6 +117,7 @@ class CreateBannerDialog extends React.Component {
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
+                this.props.handleEditRow(jsonResult.data)
             }
         }).catch((error) => {
             console.error(error);
@@ -153,7 +154,7 @@ class CreateBannerDialog extends React.Component {
                 onClose={handleClose}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description">
-                <DialogTitle id="alert-dialog-title">Create Banner</DialogTitle>
+                <DialogTitle id="alert-dialog-title">Create/update Banner</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
                         {this.message}
