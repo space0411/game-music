@@ -166,30 +166,32 @@ class CreateCategories extends React.Component {
         this.value = index
     };
 
-    handleCreateFlatformGenre = () => {
-        if (this.value === 0) {
+    handleCreateFlatformGenre = (index) => {
+        console.log('object :', this.nameFlatform, this.nameGenre, index);
+        if (index === 0) {
             if (this.nameFlatform.length === 0)
                 return
         } else {
             if (this.nameGenre.length === 0)
                 return
         }
-        const url = `${this.props.SessionStore.API_URL}${this.value === 0 ? 'flatform' : 'genre'}/create`
+        const url = `${this.props.SessionStore.API_URL}${index === 0 ? 'flatform' : 'genre'}/create`
         fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
             },
-            body: JSON.stringify({ name: this.value === 0 ? this.nameFlatform : this.nameGenre })
+            body: JSON.stringify({ name: index === 0 ? this.nameFlatform : this.nameGenre })
         }).then((result) => {
             return result.json();
         }).then((jsonResult) => {
             console.log(jsonResult);
             if (jsonResult.success) {
-                this.value === 0 ? this.isFlatformChange = true : this.isGenreChange = true
+                index === 0 ? this.isFlatformChange = true : this.isGenreChange = true
+                this.getFlatform(index === 0)
             }
-            this.value === 0 ? this.errorFlatform = jsonResult.message : this.errorGenre = jsonResult.message
+            index === 0 ? this.errorFlatform = jsonResult.message : this.errorGenre = jsonResult.message
         }).catch((error) => {
             console.error(error);
         });
@@ -243,6 +245,7 @@ class CreateCategories extends React.Component {
             if (jsonResult.success) {
                 alert('Upload image success!')
                 this.filesDeveloper.splice(0, this.filesDeveloper.length)
+                this.getDeveloper()
             }
         }).catch((error) => {
             console.error(error);
@@ -302,6 +305,7 @@ class CreateCategories extends React.Component {
             if (jsonResult.success) {
                 alert('Upload image success!')
                 this.filesGame.splice(0, this.filesGame.length)
+                this.nameGame = ''
             }
         }).catch((error) => {
             console.error(error);
@@ -653,7 +657,7 @@ class CreateCategories extends React.Component {
                             </CardHeader>
                             <CardFooter stats style={{ display: ' flex', justifyContent: 'flex-end' }}>
                                 <div>
-                                    <Button color="secondary" variant="contained" onClick={this.handleCreateFlatformGenre} >Submit</Button>
+                                    <Button color="secondary" variant="contained" onClick={()=>this.handleCreateFlatformGenre(index)} >Submit</Button>
                                 </div>
                             </CardFooter>
                         </Card>

@@ -42,6 +42,7 @@ const rowsDeveloper = [
 const rowsMusic = [
     { id: 'id', numeric: false, disablePadding: true, label: 'ID' },
     { id: 'name', numeric: false, disablePadding: true, label: 'Name' },
+    { id: 'artist', numeric: false, disablePadding: true, label: 'Artist' },
     { id: 'type', numeric: false, disablePadding: true, label: 'Type' },
     { id: 'url', numeric: false, disablePadding: true, label: 'Url' },
     { id: 'options', numeric: true, disablePadding: false, label: '' },

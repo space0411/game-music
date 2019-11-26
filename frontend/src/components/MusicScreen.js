@@ -441,6 +441,7 @@ class MusicScreen extends React.Component {
                                                     </TableCell>
                                                     <TableCell component="th" scope="row" padding="none">{n.id}</TableCell>
                                                     <TableCell component="th" scope="row" padding="none">{n.name}</TableCell>
+                                                    <TableCell component="th" scope="row" padding="none">{n.artist}</TableCell>
                                                     <TableCell component="th" scope="row" padding="none">{n.type}</TableCell>
                                                     <TableCell component="th" scope="row" padding="none">{n.url}</TableCell>
                                                     <TableCell align="right">

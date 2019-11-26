@@ -10,6 +10,7 @@ class EditMusicDialog extends React.Component {
         this.state = {
             name: '',
             url: '',
+            artist: '',
             duration: 0,
             data: undefined,
             hour: 0,
@@ -22,16 +23,21 @@ class EditMusicDialog extends React.Component {
         this.setState({ name: e.target.value })
     }
 
+    handleChangeArtist = (e) => {
+        this.setState({ artist: e.target.value })
+    }
+
     handleChangeUrl = (e) => {
         this.setState({ url: e.target.value })
     }
 
     handleApplyChange = () => {
-        const { name, duration, data } = this.state
+        const { name, duration, data, artist } = this.state
         const rawData = {
             id: data.id,
             name,
-            duration
+            duration,
+            artist
         }
         this.props.handleAgree(rawData)
     }
@@ -104,7 +110,8 @@ class EditMusicDialog extends React.Component {
                     duration: data.duration,
                     hour: hours,
                     minute: minutes,
-                    second: seconds
+                    second: seconds,
+                    artist: data.artist
                 });
             }
         }
@@ -112,7 +119,7 @@ class EditMusicDialog extends React.Component {
 
     render() {
         const { classes, handleClose, open } = this.props
-        const { data, name, url, duration, hour, minute, second } = this.state
+        const { data, name, artist, url, duration, hour, minute, second } = this.state
         return (
             <div>
                 <Dialog
@@ -131,6 +138,13 @@ class EditMusicDialog extends React.Component {
                             className={classes.textField}
                             value={name}
                             onChange={this.handleChangeName}
+                            margin="normal" />
+                        <TextField
+                            required
+                            label='Artist'
+                            className={classes.textField}
+                            value={artist}
+                            onChange={this.handleChangeArtist}
                             margin="normal" />
                         <TextField
                             required

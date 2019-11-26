@@ -6,6 +6,7 @@ import {
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import AutorenewIcon from '@material-ui/icons/Autorenew';
 import PlayIcon from '@material-ui/icons/PlayCircleFilled';
 import { observer, inject } from 'mobx-react';
 import { observable } from 'mobx';
@@ -326,7 +327,7 @@ class MusicManagerDialog extends React.Component {
     }
 
     handleAgreeEdit = (item) => {
-        console.log('Edit data', item.name, item.id)
+        console.log('Edit data', item)
         this.openEditAlert = false
         this.editMusic(item)
     }
@@ -348,6 +349,10 @@ class MusicManagerDialog extends React.Component {
         }
         if (searchText.length === 0)
             this.data = [...this.searchTemp]
+    }
+
+    handleRefreshMusic = () => {
+        this.get(this.productData, undefined)
     }
 
     handleUpdateIndex = () => {
@@ -435,7 +440,10 @@ class MusicManagerDialog extends React.Component {
                             </IconButton>
                             <Typography variant="h6" className={classes.title}>
                                 Music
-              </Typography>
+                            </Typography>
+                            <Button variant="contained" className={classes.button} onClick={this.handleRefreshMusic} color="secondary">
+                                Refresh music<AutorenewIcon className={classes.icon} />
+                            </Button>
                             <Button variant="contained" className={classes.button} onClick={this.handleUpdateIndex} color="secondary">
                                 Update Index<CloudUploadIcon className={classes.icon} />
                             </Button>
@@ -496,6 +504,7 @@ class MusicManagerDialog extends React.Component {
                                                                             </TableCell>
                                                                             <TableCell component="th" scope="row" padding="none">{n.id}</TableCell>
                                                                             <TableCell component="th" scope="row" padding="none">{n.name}</TableCell>
+                                                                            <TableCell component="th" scope="row" padding="none">{n.artist}</TableCell>
                                                                             <TableCell component="th" scope="row" padding="none">{n.type}</TableCell>
                                                                             <TableCell component="th" scope="row" padding="none">{n.url}</TableCell>
                                                                             <TableCell align="right">

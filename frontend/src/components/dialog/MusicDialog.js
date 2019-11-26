@@ -91,6 +91,11 @@ class MusicDialog extends React.Component {
     resetServerContext()
   }
 
+  handleArtistChange = (event, myindex) => {
+    this.musics = this.musics.map((value, index) => index === myindex ? Object.assign(value, { artist: event.target.value }) : value)
+    resetServerContext()
+  }
+
   handleDurationChange = (event, myindex, type) => {
     const text = Math.floor(event.target.value)
     switch (type) {
@@ -152,7 +157,7 @@ class MusicDialog extends React.Component {
       var musicData = []
       this.musics.forEach(file => {
         data.append('file', file)
-        musicData.push({ name: file.title, duration: file.duration })
+        musicData.push({ name: file.title, duration: file.duration, artist: file.artist })
       })
       console.log(musicData)
       if (musicData.length > 0)
@@ -231,6 +236,13 @@ class MusicDialog extends React.Component {
                                       className={classes.textField}
                                       value={item.title || ''}
                                       onChange={event => this.handleTitleChange(event, index)}
+                                      margin="normal" />
+                                    <TextField
+                                      required
+                                      label="Artist"
+                                      className={classes.textField}
+                                      value={item.artist || ''}
+                                      onChange={event => this.handleArtistChange(event, index)}
                                       margin="normal" />
                                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                                       <TextField
