@@ -202,6 +202,7 @@ class BannerScreen extends React.Component {
         if (index !== -1) {
             this.data.splice(index, 1, data)
         }
+        this.handleCloseCreateBanner()
     }
 
     handleChangePublish = (data) => {

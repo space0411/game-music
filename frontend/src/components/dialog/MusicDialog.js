@@ -176,11 +176,23 @@ class MusicDialog extends React.Component {
               title: 'Notify',
               content: jsonResult.message
             })
+            this.musics = []
           }
         }).catch((error) => {
           console.error(error);
         });
     }
+  }
+
+  handleRemoveItem = (item, index) => {
+    let files = []
+    this.musics.forEach((value, myIndex) => {
+      if (myIndex !== index) {
+        files.push(value)
+      }
+    });
+    this.musics = files
+    // resetServerContext()
   }
 
   render() {
@@ -229,49 +241,59 @@ class MusicDialog extends React.Component {
                             >
                               <div>
                                 <ListItem button>
-                                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <TextField
-                                      required
-                                      label="Music Name"
-                                      className={classes.textField}
-                                      value={item.title || ''}
-                                      onChange={event => this.handleTitleChange(event, index)}
-                                      margin="normal" />
-                                    <TextField
-                                      required
-                                      label="Artist"
-                                      className={classes.textField}
-                                      value={item.artist || ''}
-                                      onChange={event => this.handleArtistChange(event, index)}
-                                      margin="normal" />
-                                    <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                      <TextField
-                                        required
-                                        type="number"
-                                        label="Hour"
-                                        className={classes.textFieldTime}
-                                        value={item.hour || ''}
-                                        onChange={event => this.handleDurationChange(event, index, 'h')}
-                                        margin="normal" />
-                                      <TextField
-                                        required
-                                        type="number"
-                                        label="Minute"
-                                        className={classes.textFieldTime}
-                                        value={item.minute || ''}
-                                        onChange={event => this.handleDurationChange(event, index, 'm')}
-                                        margin="normal" />
-                                      <TextField
-                                        required
-                                        type="number"
-                                        label="Second"
-                                        className={classes.textFieldTime}
-                                        value={item.second || ''}
-                                        onChange={event => this.handleDurationChange(event, index, 's')}
-                                        margin="normal" />
+                                  <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                      <div style={{ height: 'fit-content' }}>
+                                        <IconButton edge="start" color="primary" onClick={() => this.handleRemoveItem(item, index)} aria-label="close">
+                                          <CloseIcon />
+                                        </IconButton>
+                                      </div>
                                     </div>
-                                    <ListItemText primary={item.name} secondary={`Size: ${item.size}`} />
-                                    <ListItemText primary={`Duration: ${this.msToHMS(item.duration)}`} secondary={`${item.duration} milis`} />
+                                    <div style={{ width: 1, backgroundColor: 'grey', marginLeft: 5, marginRight: 16 }}></div>
+                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                      <TextField
+                                        required
+                                        label="Music Name"
+                                        className={classes.textField}
+                                        value={item.title || ''}
+                                        onChange={event => this.handleTitleChange(event, index)}
+                                        margin="normal" />
+                                      <TextField
+                                        required
+                                        label="Artist"
+                                        className={classes.textField}
+                                        value={item.artist || ''}
+                                        onChange={event => this.handleArtistChange(event, index)}
+                                        margin="normal" />
+                                      <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                        <TextField
+                                          required
+                                          type="number"
+                                          label="Hour"
+                                          className={classes.textFieldTime}
+                                          value={item.hour || ''}
+                                          onChange={event => this.handleDurationChange(event, index, 'h')}
+                                          margin="normal" />
+                                        <TextField
+                                          required
+                                          type="number"
+                                          label="Minute"
+                                          className={classes.textFieldTime}
+                                          value={item.minute || ''}
+                                          onChange={event => this.handleDurationChange(event, index, 'm')}
+                                          margin="normal" />
+                                        <TextField
+                                          required
+                                          type="number"
+                                          label="Second"
+                                          className={classes.textFieldTime}
+                                          value={item.second || ''}
+                                          onChange={event => this.handleDurationChange(event, index, 's')}
+                                          margin="normal" />
+                                      </div>
+                                      <ListItemText primary={item.name} secondary={`Size: ${item.size}`} />
+                                      <ListItemText primary={`Duration: ${this.msToHMS(item.duration)}`} secondary={`${item.duration} milis`} />
+                                    </div>
                                   </div>
                                 </ListItem>
                                 <Divider />
