@@ -98,6 +98,7 @@ class CreateUserScreen extends Component {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
             },
             body: JSON.stringify({
                 email: this.email,
