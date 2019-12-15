@@ -101,6 +101,7 @@ class CreateUserScreen extends Component {
                 'Authorization': `Bearer ${this.props.SessionStore.getUserToken()}`
             },
             body: JSON.stringify({
+                id: this.userID,
                 email: this.email,
                 role: this.role,
                 password: this.password,
