@@ -8,6 +8,12 @@ Include:
 
 Lưu ý: Phiên bản SDK expo có thể bị lỗi thời, hãy tìm cách upgrade lên SDK mới nhất nhé. 
 
+Tham khảo thêm: 
+
+https://github.com/space0411/game-music-api
+
+https://github.com/space0411/game-music-mobile
+
 # Backend
 Preview Screen:
   - Trang đăng nhập
