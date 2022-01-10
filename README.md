@@ -4,7 +4,7 @@ Include:
   - Backend: Sails JS - NodeJS 12.13.1 LTS
   - FrontEnd: React Native (Expo)
   - Database: MySQL 5.7
-  - Document: Đồ án tốt nghiệp ngành công nghệ thông tin (* send mail request to me, if you want it. ^^)
+  - Document: *
 
 Lưu ý: Phiên bản SDK expo có thể bị lỗi thời, hãy tìm cách upgrade lên SDK mới nhất nhé. 
 
